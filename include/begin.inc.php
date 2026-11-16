@@ -156,7 +156,8 @@ if (function_exists('db_connect')) {
 			if (is_exists_language($_OVRD_OPENDB_LANGUAGE)) {
 				$_OPENDB_LANGUAGE = $_OVRD_OPENDB_LANGUAGE;
 			} else {
-				#unset($_OPENDB_LANGUAGE);
+				// the ENGLISH set above is only for pages without database
+				$_OPENDB_LANGUAGE = '';
 
 				if (strlen(get_opendb_session_var('user_id')) > 0 && get_opendb_config_var('user_admin', 'user_language_support') !== FALSE) {
 					$user_language = fetch_user_language(get_opendb_session_var('user_id'));
