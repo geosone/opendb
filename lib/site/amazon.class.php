@@ -29,6 +29,7 @@
 */
 include_once("./lib/SitePlugin.class.php");
 include_once("./lib/site/amazonutils.php");
+include_once("./lib/site/imdbgql.class.php");
 
 class amazon extends SitePlugin {
 	private $url;
@@ -190,6 +191,7 @@ class amazon extends SitePlugin {
 			case 'bd':
 			case 'vhs':
 				$this->parse_video($s_item_type, $details, $byline, $description);
+				$this->complete_from_imdb();
 				break;
 			case 'books':
 			case 'stripbooks':
@@ -272,6 +274,58 @@ class amazon extends SitePlugin {
 		}
 		if (strlen($description) > 0) {
 			$this->addItemAttribute('blurb', amazon_plot($description));
+		}
+	}
+
+	/**
+	 * Amazon rarely has the FSK, genres or the full cast of a film: look
+	 * the title up at IMDb and add what is missing, plus the IMDb id.
+	 * The site plugin conf 'imdb_lookup' = 'N' turns it off.
+	 */
+	function complete_from_imdb() {
+		if ($this->getConfigValue('imdb_lookup') === 'N') {
+			return;
+		}
+		$title = $this->getItemAttribute('title');
+		if (is_array($title)) {
+			$title = reset($title);
+		}
+		$year = $this->getItemAttribute('year');
+		if (is_array($year)) {
+			$year = reset($year);
+		}
+		if (strlen((string)$title) == 0) {
+			return;
+		}
+
+		$error = NULL;
+		$id = imdbgql_find_id($title, (int)$year, $error);
+		$t = $id !== FALSE ? imdbgql_title($id, $error) : FALSE;
+		if ($t === FALSE) {
+			if ($error != NULL) {
+				opendb_logger(OPENDB_LOG_WARN, __FILE__, __FUNCTION__, 'IMDb lookup failed: ' . $error, array($title));
+			}
+			return;
+		}
+		$imdb = imdbgql_title_attributes($id, $t);
+
+		// the IMDb data, not the disc's: id, genres and rating always,
+		// the rest only where Amazon had nothing
+		foreach (array('imdb_id', 'genre', 'imdbrating') as $attr) {
+			if (isset($imdb[$attr])) {
+				$this->replaceItemAttribute($attr, $imdb[$attr]);
+			}
+		}
+		foreach (array('age_rating', 'director', 'actors', 'writer', 'producer', 'composer', 'episodes') as $attr) {
+			if (isset($imdb[$attr]) && !$this->isItemAttributeSet($attr)) {
+				$this->addItemAttribute($attr, $imdb[$attr]);
+			}
+		}
+		if (isset($imdb['plot']) && !$this->isItemAttributeSet('blurb')) {
+			$this->addItemAttribute('blurb', $imdb['plot']);
+		}
+		if (isset($imdb['run_time']) && !$this->isItemAttributeSet('run_time')) {
+			$this->addItemAttribute('run_time', $imdb['run_time']);
 		}
 	}
 
