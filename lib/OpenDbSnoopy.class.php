@@ -84,6 +84,95 @@ class OpenDbSnoopy extends Snoopy {
 		}
 	}
 
+	/**
+	 * Fetches with the curl extension, sending the headers of a current
+	 * browser (shops like Amazon answer bare HTTP clients with a robot
+	 * page). Sets what Snoopy::fetch() sets: status, results, headers,
+	 * lastredirectaddr, error.
+	 */
+	function fetch($URI) {
+		if (!function_exists('curl_init')) {
+			return parent::fetch($URI);
+		}
+
+		$this->status = 0;
+		$this->results = '';
+		$this->headers = array();
+		$this->error = '';
+		$this->lastredirectaddr = '';
+
+		$host = parse_url($URI, PHP_URL_HOST);
+		$lang = 'en-US,en;q=0.8';
+		if (preg_match('/\.(de|at|ch)$/', (string)$host)) {
+			$lang = 'de-DE,de;q=0.9,en;q=0.6';
+		} else if (preg_match('/\.fr$/', (string)$host)) {
+			$lang = 'fr-FR,fr;q=0.9,en;q=0.6';
+		} else if (preg_match('/\.co\.uk$/', (string)$host)) {
+			$lang = 'en-GB,en;q=0.9';
+		}
+
+		$ch = curl_init($URI);
+		$response_headers = array();
+		curl_setopt_array($ch, array(
+				CURLOPT_RETURNTRANSFER => TRUE,
+				CURLOPT_FOLLOWLOCATION => TRUE,
+				CURLOPT_MAXREDIRS => 5,
+				CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+				CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+				CURLOPT_CONNECTTIMEOUT => 15,
+				CURLOPT_TIMEOUT => 45,
+				CURLOPT_ENCODING => '',
+				CURLOPT_USERAGENT => 'Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0',
+				CURLOPT_HTTPHEADER => array(
+						'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,application/json;q=0.8,*/*;q=0.7',
+						'Accept-Language: ' . $lang,
+						'Upgrade-Insecure-Requests: 1',
+						'Sec-Fetch-Dest: document',
+						'Sec-Fetch-Mode: navigate',
+						'Sec-Fetch-Site: none'),
+				CURLOPT_HEADERFUNCTION => function ($c, $line) use (&$response_headers) {
+					$l = rtrim($line, "\r\n");
+					if (preg_match('!^HTTP/!', $l)) {
+						$response_headers = array(); // only the last response of a redirect chain
+					}
+					if (strlen($l) > 0) {
+						$response_headers[] = $l;
+					}
+					return strlen($line);
+				}));
+		if (strlen($this->proxy_host) > 0) {
+			curl_setopt($ch, CURLOPT_PROXY, $this->proxy_host . ':' . $this->proxy_port);
+			if (strlen($this->proxy_user) > 0) {
+				curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxy_user . ':' . $this->proxy_pass);
+			}
+		}
+
+		$body = curl_exec($ch);
+		if ($body === FALSE) {
+			$this->error = curl_error($ch);
+			curl_close($ch);
+			return FALSE;
+		}
+		$this->status = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+		$effective = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+		if ($effective != $URI) {
+			$this->lastredirectaddr = $effective;
+		}
+		curl_close($ch);
+
+		// Amazon answers suspected robots with 200 and a captcha / empty page;
+		// that must not be cached as the result
+		if (preg_match('/(^|\.)amazon\./', (string)$host) && $this->status == 200
+				&& strpos($body, 'data-asin') === FALSE && strpos($body, 'productTitle') === FALSE) {
+			$this->status = 503;
+			$this->error = 'Amazon refused the request (robot check)';
+		}
+
+		$this->headers = $response_headers;
+		$this->results = $body;
+		return TRUE;
+	}
+
 	function getDebugMessagesAsHtml() {
 		if (is_array ( $this->_debugMessages ))
 			return format_error_block ( $this->_debugMessages, 'information' );

@@ -16,407 +16,312 @@
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+  Amazon site plugin (amazon.com, .co.uk, .fr, .de).
+
+  Search:  /s?k=<title or barcode>&i=<index>  - result tiles <div role="listitem" data-asin=...>
+  Item:    /dp/<ASIN>                          - #productTitle, #landingImage, product details
+           (#detailBullets_feature_div or #productDetails_* tables), #bylineInfo,
+           #productDescription / #bookDescription_feature_div
+
+  The product detail labels are in the language of the shop, they are mapped
+  to one set of keys by amazon_detail_key().
 */
 include_once("./lib/SitePlugin.class.php");
 include_once("./lib/site/amazonutils.php");
 
 class amazon extends SitePlugin {
-    private $url;
-    private $asinId;
+	private $url;
+	private $asinId;
 
-    private $sites = array('amazon' => array('asinId' => 'amazonasin', 'url' => 'www.amazon.com'),
-                           'amazonuk' => array('asinId' => 'amazukasin', 'url' => 'www.amazon.co.uk'),
-                           'amazonfr' => array('asinId' => 'amazfrasin', 'url' => 'www.amazon.fr'),
-                           'amazonde' => array('asinId' => 'amazdeasin', 'url' => 'www.amazon.de')
-    );
+	private $sites = array(
+			'amazon' => array('asinId' => 'amazonasin', 'url' => 'www.amazon.com'),
+			'amazonuk' => array('asinId' => 'amazukasin', 'url' => 'www.amazon.co.uk'),
+			'amazonfr' => array('asinId' => 'amazfrasin', 'url' => 'www.amazon.fr'),
+			'amazonde' => array('asinId' => 'amazdeasin', 'url' => 'www.amazon.de'));
 
-    function __construct($site_type) {
-        parent::__construct($site_type);
+	function __construct($site_type) {
+		parent::__construct($site_type);
 
-        $this->asinId = $this->sites[$site_type]['asinId'];
-        $this->url = $this->sites[$site_type]['url'];
-    }
+		$this->asinId = $this->sites[$site_type]['asinId'];
+		$this->url = $this->sites[$site_type]['url'];
+	}
 
-    function queryListing($page_no, $items_per_page, $offset, $s_item_type, $search_vars_r) {
-        if (strlen($search_vars_r[$this->asinId]) > 0) {
-            $this->addListingRow(NULL, NULL, NULL, array($this->asinId => $search_vars_r[$this->asinId]));
-            return TRUE;
-        } else {
-            // Get the mapped AMAZON index type
-            $index_type = ifempty($this->getConfigValue('item_type_to_index_map', $s_item_type), strtolower($s_item_type));
+	function queryListing($page_no, $items_per_page, $offset, $s_item_type, $search_vars_r) {
+		$asin = trim($search_vars_r[$this->asinId] ?? '');
+		if (strlen($asin) > 0) {
+			if (preg_match('!/(?:dp|gp/product)/([A-Z0-9]{10})!i', $asin, $m)) { // a pasted product link
+				$asin = $m[1];
+			}
+			$this->addListingRow(NULL, NULL, NULL, array($this->asinId => strtoupper($asin)));
+			return TRUE;
+		}
 
-            // amazon does not provide the ability to specify how many items per page, so $items_per_page is ignored!
-            $queryUrl = "https://" . $this->url . "/s?ie=UTF8&index=" . $index_type .
-                      "&keyword=" . urlencode($search_vars_r['title']) . "&page=$page_no";
+		$term = trim($search_vars_r['title'] ?? '');
+		if (strlen($term) == 0) {
+			return FALSE;
+		}
 
-            $pageBuffer = $this->fetchURI($queryUrl);
-        }
+		$index_type = ifempty($this->getConfigValue('item_type_to_index_map', $s_item_type), strtolower($s_item_type));
+		$amazon_index = amazon_search_index($index_type);
+		$barcode = amazon_barcode($term);
 
-        if (strlen($pageBuffer) > 0) {
-            $amazonasin = FALSE;
+		$keywords = $barcode !== FALSE ? $barcode : $term;
+		$queryUrl = "https://" . $this->url . "/s?k=" . urlencode($keywords) . ($amazon_index != NULL ? "&i=" . $amazon_index : "") . ($page_no > 1 ? "&page=" . (int)$page_no : "");
 
-            //<li><b>ISBN-10:</b> 0812929985</li>
-            //<a href="http://www.amazon.com/Batteries-Not-Included-Jessica-Tandy/dp/0783232047/ref=sr_1_1?s=movies-tv&amp;ie=UTF8&amp;qid=1409445432&amp;sr=1-1&amp;keywords=025192052026">
-            // check for an exact match, but not if this is second page of listings or more
-            if (!$this->isPreviousPage()) {
-                if (preg_match("/ASIN: <font>(\w{10})<\/font>/", $pageBuffer, $regs)) {
-                    $amazonasin = trim($regs[1]);
-                } else if (preg_match("/ASIN: (\w{10})/", strip_tags($pageBuffer), $regs)) {
-                    $amazonasin = trim($regs[1]);
-                } else if (preg_match("!<li><b>ISBN-10:</b>\s*([0-9]+)</li>!", $pageBuffer, $regs)) { // for books, ASIN is the same as ISBN
-                    $amazonasin = trim($regs[1]);
-                } else if (preg_match_all("!<div id=\"result_[0-9]+\"[^>]*?name=\"([^\"])\"!", $pageBuffer, $regs)) {
-                    if (count($regs[0]) == 1) {
-                        $amazonasin = trim($regs[1]);
-                    }
-                } else if (preg_match_all("!<div id=\"result_([0-9]+)\"!", $pageBuffer, $regs)) {
-                    if (count($regs[0]) == 1) {
-                        if (preg_match("!<a href=\".*?/dp/([^/]+)/.*?keywords=.*?!", $pageBuffer, $regs)) {
-                            $amazonasin = trim($regs[1]);
-                        }
-                    }
-                }
-            }
+		$pageBuffer = $this->fetchURI($queryUrl);
+		if (strlen($pageBuffer) == 0) {
+			return FALSE;
+		}
 
-            // exact match
-            if ($amazonasin !== FALSE) {
-                // single record returned
-                $this->addListingRow(NULL, NULL, NULL, array($this->asinId => $amazonasin, 'search.title' => $search_vars_r['title']));
+		$results = amazon_parse_search_results($pageBuffer);
+		$pageBuffer = NULL;
 
-                return TRUE;
-            } else {
-                // this is a severe memory hog!!!
-                $pageBuffer = preg_replace('/[\r\n]+/', ' ', $pageBuffer);
+		// Blu-ray and DVD share one index: prefer the requested format
+		if ($index_type == 'dvd' || $index_type == 'bd') {
+			$wanted = array();
+			foreach ($results as $r) {
+				$is_bd = preg_match('/blu-?ray|4k|uhd/i', $r['title'] . ' ' . $r['format']);
+				if (($s_item_type == 'BD' && $is_bd) || ($s_item_type != 'BD' && !$is_bd)) {
+					$wanted[] = $r;
+				}
+			}
+			if (count($wanted) > 0) {
+				$results = $wanted;
+			}
+		}
 
-                //<div class="resultCount">Showing 1 - 12 of 55 Results</div> || class="resultCount">Showing 1 Result</
-                //<span>1-24 von 194 Ergebnissen</span>
-                if ((preg_match("/ id=\"resultCount\">.*?<span>.*?.[0-9]+[\s]+?-[\s]+?[0-9]+.*?([0-9,]+).*?<\//", $pageBuffer, $regs) ||
-                     preg_match("/ id=\"resultCount\">.*?<span>.*?.([0-9]+).*?<\//", $pageBuffer, $regs) ||
-                     preg_match("/ id=.s-result-count.*?([0-9,]+) results? for/", $pageBuffer, $regs) )) {
-                    // need to remove the commas from the total
-                    $total = str_replace(",", "", $regs[1]);
+		$extra = array('search.title' => $term);
+		if ($barcode !== FALSE) {
+			$extra['search.barcode'] = $barcode;
+		}
 
-                    // store total count here.
-                    $this->setTotalCount($total);
+		// a barcode that finds exactly one product is that product
+		if ($barcode !== FALSE && count($results) == 1 && !$this->isPreviousPage()) {
+			$this->addListingRow(NULL, NULL, NULL, array_merge(array($this->asinId => $results[0]['asin']), $extra));
+			return TRUE;
+		}
 
-                    // 2 = img, 1 = href, 3 = title
-                    if (preg_match_all("/id=\"result_.*?href=\"(.*?)\">.*?<img.*?src=\"([^\"]+)\".*?<a.*?>(.*?)<\/a/i", $pageBuffer, $matches)) {
-                        for ($i = 0; $i < count($matches[0]); $i++) {
+		$total = amazon_parse_result_count($results);
+		$this->setTotalCount($total);
 
-                            $imageuri = preg_replace('!(\/[^.]+\.)_[^.]+_\.!', "$1", $matches[2][$i]);
+		foreach ($results as $r) {
+			$title = $r['title'];
+			if (strlen($r['format']) > 0 && stripos($title, $r['format']) === FALSE) {
+				$title .= ' [' . $r['format'] . ']';
+			}
+			$this->addListingRow($title, $r['image'], NULL, array_merge(array($this->asinId => $r['asin']), $extra));
+		}
+		return TRUE;
+	}
 
-                            if (preg_match("!/dp/([^/]+)/!", $matches[1][$i], $regs)) {
-                                if (strpos($matches[2][$i], "no-img") !== FALSE)
-                                    $matches[2][$i] = NULL;
+	function queryItem($search_attributes_r, $s_item_type) {
+		$asin = $search_attributes_r[$this->asinId] ?? '';
+		if (!preg_match('/^[A-Z0-9]{10}$/i', $asin)) {
+			return FALSE;
+		}
 
-                                if (!preg_match("!<a .*title=\"Shop Instant Video\" href=\"[^>]*/dp/".$regs[1]."/!i", $pageBuffer, $newregs)) {
-                                    $this->addListingRow($matches[3][$i], $imageuri, NULL, array($this->asinId => $regs[1], 'search.title' => $search_vars_r['title']));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+		$pageBuffer = $this->fetchURI("https://" . $this->url . "/dp/" . strtoupper($asin));
+		if (strlen($pageBuffer) == 0) {
+			return FALSE;
+		}
 
-            //default
-            return TRUE;
-        } else {
-            return FALSE;
-        }
-    }
+		$xmlDoc = amazon_load_dom($pageBuffer);
+		$pageBuffer = NULL;
+		if ($xmlDoc === FALSE) {
+			return FALSE;
+		}
 
-    function queryItem($search_attributes_r, $s_item_type) {
-        // assumes we have an exact match here
-        $url = "https://" . $this->url . "/gp/product/" . $search_attributes_r[$this->asinId];
-        $pageBuffer = preg_replace('/\s*[\r\n]+/', "\n", $this->fetchURI($url));
+		// TITLE
+		foreach (array('productTitle', 'ebooksProductTitle', 'btAsinTitle', 'title') as $id) {
+			$e = $xmlDoc->getElementById($id);
+			if ($e && strlen(trim($e->textContent)) > 0) {
+				$this->addItemAttribute('title', amazon_clean_title($e->textContent));
+				break;
+			}
+		}
 
-        // no sense going any further here.
-        if (strlen($pageBuffer) == 0)
-            return FALSE;
+		// barcode / ISBN the item was found with
+		$code = $search_attributes_r['search.barcode'] ?? amazon_barcode($search_attributes_r['search.title'] ?? '');
+		if ($code !== FALSE && $code !== NULL) {
+			if (preg_match('/^97[89]/', $code) && strlen($code) == 13) {
+				$this->addItemAttribute('isbn13', $code);
+			} else if (strlen($code) == 10 && preg_match('/^[0-9]{9}[0-9X]$/', $code)) {
+				$this->addItemAttribute('isbn', $code);
+			} else {
+				$this->addItemAttribute('upc_id', $code);
+			}
+		}
 
-        // Remove all the style and script tags and all &nbsp; so DOM Parser doesn't throw up
-        $pageBuffer = preg_replace( array('/&nbsp;/is', '/<script.*?<\/script>/ism', '/<style.*?<\/style>/ims'),
-                                    array(' ', '<script></script>', '<style></style>'), $pageBuffer );
+		// COVER
+		$image = amazon_main_image($xmlDoc);
+		if ($image) {
+			$this->addItemAttribute('imageurl', $image);
+		}
 
-        $xmlDoc = new DOMDocument();
-        $xmlDoc->loadHTML($pageBuffer);
-        // free pageBuffer
-        $pageBuffer = "";
+		// PRICE
+		$price = amazon_price($xmlDoc);
+		if ($price) {
+			$this->addItemAttribute('listprice', $price);
+		}
 
-        // TITLE
-        $e = $xmlDoc->getElementById('btAsinTitle');
-        if (!$e)
-            $e = $xmlDoc->getElementById('productTitle');
-        if (!$e)
-            $e = $xmlDoc->getElementById("ebooksProductTitle");
-        if (!$e)
-            $e = $xmlDoc->getElementById("title");
-        if ($e) {
-            // remove extra info at end "(Special Edition) (2018)..."
-            $title = trim(preg_replace('/\s*\([^)]*\)/', "", $e->textContent));
-            $this->addItemAttribute('title', $title);
-        }
+		$details = amazon_product_details($xmlDoc);
+		$byline = amazon_byline($xmlDoc);
+		$description = amazon_description($xmlDoc);
 
-        // Use search info to fill in known fields
-        $upcId = get_upc_code($search_attributes_r['search.title']);
-        if ($upcId && $upcId != $this->getItemAttribute('title')) {
-            $this->addItemAttribute('upc_id', $upcId);
-        }
+		$index_type = ifempty($this->getConfigValue('item_type_to_index_map', $s_item_type), strtolower($s_item_type));
+		switch ($index_type) {
+			case 'dvd':
+			case 'bd':
+			case 'vhs':
+				$this->parse_video($s_item_type, $details, $byline, $description);
+				break;
+			case 'books':
+			case 'stripbooks':
+				$this->parse_books($details, $byline, $description, $xmlDoc);
+				break;
+			case 'videogames':
+				$this->parse_game($details, $description);
+				break;
+			case 'music':
+			case 'popular':
+				$this->parse_music($details, $byline, $description);
+				break;
+		}
 
-        $isbn = get_isbn_code($search_attributes_r['search.title']);
-        if ($isbn) {
-            if (strlen($isbn) == 10)
-                $this->addItemAttribute('isbn', $isbn);
-            else if (strlen($isbn) == 13)
-                $this->addItemAttribute('isbn13', $isbn);
-        }
+		return TRUE;
+	}
 
-        // Front Cover
-        $e = $xmlDoc->getElementById('main-image');
-        if (!$e)
-            $e = $xmlDoc->getElementById('landingImage');
-        if (!$e)
-            $e = $xmlDoc->getElementById('imgBlkFront');
-        if (!$e)
-            $e = $xmlDoc->getElementById('ebooksImgBlkFront');
-        if ($e)
-            $this->addItemAttribute('imageurl', amazon_image2url($e));
+	function parse_video($s_item_type, $details, $byline, $description) {
+		$people = array(
+				'actors' => 'actors',
+				'director' => 'director',
+				'producer' => 'producer',
+				'writer' => 'writer',
+				'composer' => 'composer');
+		foreach ($people as $key => $attr) {
+			if (isset($details[$key])) {
+				$this->addItemAttribute($attr, amazon_names($details[$key]));
+			} else if (isset($byline[$key])) {
+				$this->addItemAttribute($attr, $byline[$key]);
+			}
+		}
 
+		if (isset($details['studio'])) {
+			$this->addItemAttribute('studio', trim(preg_replace('/\s*\(.*\)\s*$/', '', $details['studio'])));
+		}
+		// the film itself (year, length, rating) as given in the description,
+		// else what the product details say about the disc
+		$facts = amazon_film_facts($description);
+		$minutes = isset($details['run_time']) ? amazon_minutes($details['run_time']) : 0;
+		if ($facts['minutes'] !== FALSE && ($minutes == 0 || $minutes > $facts['minutes'] * 1.5)) {
+			$minutes = $facts['minutes'];
+		}
+		if ($minutes > 0) {
+			$this->addItemAttribute('run_time', $minutes);
+		}
+		$year = $facts['year'] !== FALSE ? $facts['year'] : (isset($details['release_date']) ? amazon_year($details['release_date']) : FALSE);
+		if ($year) {
+			$this->addItemAttribute('year', $year);
+		}
+		if (!isset($details['rating']) && $facts['rating'] !== FALSE) {
+			$this->addItemAttribute('age_rating', $facts['rating']);
+		}
+		if (isset($details['ratio']) && ($ratio = amazon_ratio($details['ratio'])) !== FALSE) {
+			$this->addItemAttribute('ratio', $ratio);
+		}
+		if (isset($details['discs']) && preg_match('/(\d+)/', $details['discs'], $m)) {
+			$this->addItemAttribute('no_media', $m[1]);
+		}
+		if (isset($details['language'])) {
+			$this->addItemAttribute('audio_lang', amazon_languages($details['language']));
+		}
+		if (isset($details['subtitles'])) {
+			$this->addItemAttribute('subtitles', amazon_languages($details['subtitles']));
+		}
+		if (isset($details['rating']) && ($rating = amazon_age_rating($details['rating'])) !== FALSE) {
+			$this->addItemAttribute('age_rating', $rating);
+		}
+		if (isset($details['region'])) {
+			$region = $details['region'];
+			if ($s_item_type == 'BD') {
+				if (preg_match('/\b([ABC])\b/', $region, $m)) {
+					$this->addItemAttribute('bd_region', $m[1]);
+				}
+			} else if (preg_match('/([0-6])/', $region, $m)) {
+				$this->addItemAttribute('dvd_region', $m[1]);
+			}
+		}
+		if (isset($details['format']) && preg_match('/\b(PAL|NTSC|SECAM)\b/', $details['format'], $m)) {
+			$this->addItemAttribute('vid_format', $m[1]);
+		}
+		if (strlen($description) > 0) {
+			$this->addItemAttribute('blurb', $description);
+		}
+	}
 
-        // Back Cover
-        $e = $xmlDoc->getElementById('imgBlkBack');
-        if ($e)
-            $this->addItemAttribute('imageurlb', amazon_image2url($e));
+	function parse_books($details, $byline, $description, $xmlDoc) {
+		if (isset($byline['author'])) {
+			$this->addItemAttribute('author', $byline['author']);
+		}
+		if (isset($details['publisher'])) {
+			$this->addItemAttribute('publisher', trim(preg_replace(array('/\([^)]*\)/', '/;.*/'), '', $details['publisher'])));
+		}
+		if (isset($details['pages']) && preg_match('/(\d+)/', $details['pages'], $m)) {
+			$this->addItemAttribute('no_pages', $m[1]);
+		}
+		if (isset($details['binding'])) {
+			$this->addItemAttribute('binding', $details['binding']);
+		}
+		if (isset($details['isbn10'])) {
+			$this->addItemAttribute('isbn', str_replace('-', '', $details['isbn10']));
+		}
+		if (isset($details['isbn13'])) {
+			$this->addItemAttribute('isbn13', str_replace('-', '', $details['isbn13']));
+		}
+		if (isset($details['language'])) {
+			$this->addItemAttribute('language', amazon_languages($details['language']));
+		}
+		$date = $details['release_date'] ?? ($details['publisher'] ?? '');
+		if (($year = amazon_year($date)) !== FALSE) {
+			$this->addItemAttribute('pub_year', $year);
+		}
+		if (strlen($description) > 0) {
+			$this->addItemAttribute('blurb', $description);
+		}
+	}
 
-        // Price
-        $e = $xmlDoc->getElementById('buyBoxInner');
-        if ($e)
-            $e = $e->getElementsByTagName('span')->item(2);
+	function parse_game($details, $description) {
+		if (isset($details['release_date']) && ($year = amazon_year($details['release_date'])) !== FALSE) {
+			$this->addItemAttribute('gamepbdate', $year);
+		}
+		if (isset($details['publisher'])) {
+			$this->addItemAttribute('gamepblshr', $details['publisher']);
+		}
+		if (isset($details['rating']) && ($rating = amazon_age_rating($details['rating'], 'USK')) !== FALSE) {
+			$this->addItemAttribute('gamerating', $rating);
+		}
+		if (strlen($description) > 0) {
+			$this->addItemAttribute('blurb', $description);
+		}
+	}
 
-        if (!$e) { // kindle eBook pricing
-            $f = $xmlDoc->getElementById('buybox');
-            if ($f)
-                foreach($f->getElementsByTagName('tr') as $tr)
-                    if (strpos($tr->getAttribute('class'), 'kindle-price') !== FALSE)
-                        $e = $tr->getElementsByTagName('td')->item(1);
-        }
-        if ($e)
-            $this->addItemAttribute('listprice', trim($e->childNodes[0]->textContent));
-
-        // Get the mapped AMAZON index type
-        $index_type = ifempty($this->getConfigValue('item_type_to_index_map', $s_item_type),
-                              strtolower($s_item_type));
-
-        switch ($index_type) {
-        case 'dvd':
-        case 'bd':
-        case 'vhs':
-            $this->parse_amazon_video_data($search_attributes_r, $s_item_type, $xmlDoc);
-            break;
-
-        case 'videogames':
-            $this->parse_amazon_game_data($search_attributes_r, $xmlDoc);
-            break;
-
-        case 'books':
-            $this->parse_amazon_books_data($search_attributes_r, $xmlDoc);
-            break;
-
-        case 'music':
-            $this->parse_amazon_music_data($search_attributes_r, $xmlDoc);
-            break;
-
-        default: //Not much here, but what else can we do?
-            // @@ - error for unknown type
-            break;
-        }
-
-        return TRUE;
-    }
-
-    /* BOOKS DATA */
-    function parse_amazon_books_data($search_attributes_r, $xmlDoc) {
-        // Author(s)
-        $e = $xmlDoc->getElementById('bylineInfo');
-        if ($e) {
-            $f = $e->getElementsByTagName('table')->item(0);
-            if ($f)
-                $e = $f;
-            if ($e) {
-                $a = array_map(function($f) {
-                    $l = $f->childNodes[0];
-                    if (trim($l->textContent) == "")
-                        $l = $f->getElementsByTagName('*')->item(0);
-                    return trim($l->textContent);
-                }, iterator_to_array($e->getElementsByTagName('span')));
-                if ($a) {
-                    $i = 0;
-                    while ($i < count($a)) {
-                        if (strpos($a[$i+1], 'Author') !== false)
-                            $this->addItemAttribute('author', $a[$i++]);
-                        ++$i;
-                    }
-                }
-            }
-        }
-
-        // Binding
-        $e = $xmlDoc->getElementById('title');
-        if ($e)
-            $e = $e->getElementsByTagName('span');
-        if ($e) {
-            $t = trim($e->item(1)->textContent);
-            if (strpos($t, 'Paperback') !== FALSE)
-                $this->addItemAttribute('binding', 'Paperback');
-            else if (strpos($t, 'Hardcover') !== FALSE)
-                $this->addItemAttribute('binding', 'Hardcover');
-            else if (strpos($t, 'Kindle') !== FALSE)
-                $this->addItemAttribute('binding', 'eBook');
-            else
-                $this->addItemAttribute('binding', 'Other');
-        }
-
-        // Synopsis
-        $e = $xmlDoc->getElementById('bookDescription_feature_div');
-        if ($e)
-            $e = $e->getElementsByTagName('noscript')->item(0);
-        if ($e)
-            $this->addItemAttribute('synopsis', trim($e->textContent));
-
-        // Info from Product Details
-        $details = amazon_details($xmlDoc);
-        if ($details) {
-            // Publisher
-            if (array_key_exists('Publisher', $details))
-                $this->addItemAttribute('publisher', preg_replace(array('/\([^)]*\)/', '/;.*/'), '', $details['Publisher']));
-            // Page Number
-            foreach (['Paperback', 'Hardcover', 'Print Length', 'Mass Market Paperback'] as $i)
-                if (array_key_exists($i, $details))
-                    $this->addItemAttribute('no_pages', first_word($details[$i]));
-            // ISBN
-            if (array_key_exists('ISBN-10', $details))
-                $this->addItemAttribute('isbn', $details['ISBN-10']);
-
-            // ISBN-13
-            if (array_key_exists('ISBN-13', $details))
-                $this->addItemAttribute('isbn13', $details['ISBN13']);
-
-            // Language
-            if (array_key_exists('Lanuage', $details))
-                $this->addItemAttribute('text_lang', $details['Language']);
-
-            // Publication Date
-            $year = false;
-            if (array_key_exists('Publication Date', $details))
-                $year = date('Y', strtotime($details['Publication Date']));
-            else if (array_key_exists('Publisher', $details))
-                if (preg_match("!.*?\(([^\)]*[0-9]+)\)!", $details['Publisher'], $regs))
-                    $year = year_of($regs[1]);
-            if ($year)
-                $this->addItemAttribute('pub_year', $year);
-
-            // GENRE
-            if (array_key_exists("Amazon Best Sellers Rank", $details)) {
-                $a = amazon_rank2genre($details["Amazon Best Sellers Rank"]);
-                if ($a)
-                    $this->addItemAttribute('bookgenre', $a);
-            }
-
-            // Series
-            if (array_key_exists("Series", $details))
-                $this->addItemAttribute("series", $details["Series"]);
-        }
-    }
-
-    /* VIDEO DATA */
-    function parse_amazon_video_data($search_attributes_r, $s_item_type, $xmlDoc) {
-
-        // Info from Product Details
-        $details = amazon_details($xmlDoc);
-        if ($details) {
-            // Actors, Studio
-            foreach (['Actors', 'Studio'] as $N)
-                $n = lcfirst($n);
-            if (array_key_exists($N, $details))
-                $this->addItemAttribute($n, preg_split('/\s*,\s*/', $details[$N]));
-
-            // Director, Writer, Producer
-            foreach (['Director', 'Writer', 'Producer'] as $n) {
-                $N = $n.'s';
-                if (array_key_exists($N, $details))
-                    $this->addItemAttribute(lcfirst($n), preg_split('/\s*,\s*/', $details[$N]));
-            }
-            // Region
-            if (array_key_exists('Region', $details) &&
-                preg_match("/([0-9]+)/", $details['Region'], $matches))
-                $this->addItemAttribute('dvd_region', $matches[1]);
-
-            // Ratio
-            if (array_key_exists('Ratio', $details))
-                $this->addItemAttribute('ratio', strstr($details['Ratio'], ':', TRUE));
-
-            // # of Discs
-            if (array_key_exists('Number of discs', $details))
-                $this->addItemAttribute('no_discs', $details['Number of discs']);
-
-            // Rating
-            if (array_key_exists('Rated', $details))
-                $this->addItemAttribute('age_rating', first_word($details['Rated']));
-
-            // Run Time
-            if (array_key_exists('Run Time', $details))
-                $this->addItemAttribute('run_time', first_word($details['Run Time']));
-
-            // Year
-            if (array_key_exists('DVD Release Date', $details))
-                $this->addItemAttribute('year', year_of($details['DVD Release Date']));
-
-            // GENRE
-            if (array_key_exists("Amazon Best Sellers Rank", $details)) {
-                $a = amazon_rank2genre($details["Amazon Best Sellers Rank"]);
-                if ($a)
-                    $this->addItemAttribute('genre', $a);
-            }
-        }
-    }
-
-    function parse_amazon_game_data($search_attributes_r, $xmlDoc) {
-
-        // Rating
-        $e = $xmlDoc->getElementById('vgRating_feature_div');
-        if ($e)
-            $this->addItemAttribute('gamerating', trim(""));
-        // @@
-
-        // Info from Product Details
-        $details = amazon_details($xmlDoc);
-        if ($details) {
-            // Release Date
-            if (array_key_exists("Release date", $details))
-                $this->addItemAttribute('gamepbdate', date('D/M/Y',strtotime($details["Release date"])));
-
-            // GENRE
-            if (array_key_exists("Amazon Best Sellers Rank", $details)) {
-                $a = amazon_rank2genre($details["Amazon Best Sellers Rank"]);
-                if ($a)
-                    $this->addItemAttribute('genre', $a);
-            }
-        }
-    }
-
-    function parse_amazon_music_data($search_attributes_r, $xmlDoc) {
-
-        // Info from Product Details
-        $details = amazon_details($xmlDoc);
-        if ($details) {
-            // GENRE
-            if (array_key_exists("Amazon Best Sellers Rank", $details)) {
-                $a = amazon_rank2genre($details["Amazon Best Sellers Rank"]);
-                if ($a)
-                    $this->addItemAttribute('genre', $a);
-            }
-        }
-    }
+	function parse_music($details, $byline, $description) {
+		if (isset($byline['artist'])) {
+			$this->addItemAttribute('artist', $byline['artist']);
+		}
+		if (isset($details['label'])) {
+			$this->addItemAttribute('publisher', $details['label']);
+		}
+		if (isset($details['discs']) && preg_match('/(\d+)/', $details['discs'], $m)) {
+			$this->addItemAttribute('no_media', $m[1]);
+		}
+		if (isset($details['release_date']) && ($year = amazon_year($details['release_date'])) !== FALSE) {
+			$this->addItemAttribute('year', $year);
+		}
+		if (strlen($description) > 0) {
+			$this->addItemAttribute('blurb', $description);
+		}
+	}
 }
-
 ?>
