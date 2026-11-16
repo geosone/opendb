@@ -97,10 +97,20 @@ if (function_exists('db_connect')) {
 				ob_start('ob_gzhandler');
 			}
 
+			// Session cookie: not readable by scripts, not sent along with
+			// cross-site sub requests, only over https when the site uses https.
+			$cookie_params = array(
+				'lifetime' => 0,
+				'path' => '/',
+				'httponly' => TRUE,
+				'samesite' => 'Lax',
+				'secure' => (strtolower(get_http_env('HTTPS')) == 'on' || get_http_env('HTTP_X_FORWARDED_PROTO') == 'https'));
 			// Restrict cookie to site host and path.
 			if (get_opendb_config_var('site', 'restrict_session_cookie_to_host_path') === TRUE) {
-				session_set_cookie_params(0, get_site_path(), get_site_host());
+				$cookie_params['path'] = get_site_path();
+				$cookie_params['domain'] = get_site_host();
 			}
+			session_set_cookie_params($cookie_params);
 
 			if (get_opendb_config_var('session_handler', 'enable') === TRUE) {
 				require_once("./lib/dbsession.php");

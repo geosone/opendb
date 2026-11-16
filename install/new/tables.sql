@@ -305,7 +305,7 @@ DROP TABLE IF EXISTS user;
 CREATE TABLE user (
   user_id		VARCHAR(20) NOT NULL,
   fullname		VARCHAR(100) NOT NULL,
-  pwd			VARCHAR(40),
+  pwd			VARCHAR(255),
   user_role 	VARCHAR(20) NOT NULL,
   language		VARCHAR(20),
   theme			VARCHAR(20),

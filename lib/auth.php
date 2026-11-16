@@ -238,6 +238,10 @@ function is_opendb_valid_session() {
 }
 
 function register_user_login($user_id, $doRememberMe = FALSE, $isRememberMeLogin = FALSE) {
+	// new session id for the logged in user (session fixation)
+	if (session_status() === PHP_SESSION_ACTIVE) {
+		session_regenerate_id(TRUE);
+	}
 	$time = time();
 	$_SESSION['login_time'] = $time;
 	$_SESSION['last_access_time'] = $time;
@@ -275,8 +279,8 @@ function get_opendb_session_cookie_name() {
 }
 
 function remove_opendb_remember_me() {
-	$oldCookie = $_COOKIE[get_opendb_remember_me_cookie_name()];
-	setcookie(get_opendb_remember_me_cookie_name(), "", time() - 3600);
+	$oldCookie = $_COOKIE[get_opendb_remember_me_cookie_name()] ?? "";
+	setcookie(get_opendb_remember_me_cookie_name(), "", array("expires" => time() - 3600, "path" => "/"));
 	
 	$remember_me_r = get_remember_me_r($oldCookie);
 	if ($remember_me_r !== FALSE) {
@@ -318,18 +322,14 @@ function handle_opendb_remember_me() {
 			$login_timeout = (int) ($site_r['login_timeout'] ?? $site_r['idle_timeout'] ?? 3600);
 		
 			if (insert_remember_me($_SESSION['user_id'], $cookie)) {
-				setcookie(get_opendb_remember_me_cookie_name(), $cookie, time() + $login_timeout);
+				setcookie(get_opendb_remember_me_cookie_name(), $cookie, array("expires" => time() + $login_timeout, "path" => "/", "httponly" => TRUE, "samesite" => "Lax", "secure" => (strtolower(get_http_env("HTTPS")) == "on" || get_http_env("HTTP_X_FORWARDED_PROTO") == "https")));
 			}
 		}
 	}
 }
 
 function generate_opendb_cookie() {
-	if (function_exists('openssl_random_pseudo_bytes')) {
-		return sha1(openssl_random_pseudo_bytes(1024));
-	} else {
-		return mt_rand_str(40);
-	}
+	return bin2hex(random_bytes(20));
 }
 
 //http://www.php.net/manual/en/function.mt-rand.php

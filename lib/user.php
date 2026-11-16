@@ -417,17 +417,70 @@ function fetch_user_r($uid) {
 	return FALSE;
 }
 
+/**
+ * TRUE once the user.pwd column can hold password_hash() output (upgrade 1.7.0).
+ * Until then passwords keep being stored as md5, so nothing gets truncated.
+ */
+function is_user_passwd_column_wide() {
+	static $wide = NULL;
+	if ($wide === NULL) {
+		$wide = FALSE;
+		$result = db_query("SHOW COLUMNS FROM user LIKE 'pwd'");
+		if ($result && ($r = db_fetch_assoc($result))) {
+			if (preg_match('/char\((\d+)\)/i', $r['Type'], $m)) {
+				$wide = ((int)$m[1] >= 255);
+			}
+			db_free_result($result);
+		}
+	}
+	return $wide;
+}
+
+/**
+ * The value stored in user.pwd for a clear text password.
+ */
+function opendb_hash_passwd($pwd) {
+	if (is_user_passwd_column_wide()) {
+		return password_hash($pwd, PASSWORD_DEFAULT);
+	}
+	return md5($pwd);
+}
+
 function validate_user_passwd($uid, $pwd) {
+	if (strlen((string)$pwd) == 0) {
+		return FALSE;
+	}
+
 	$query = "SELECT pwd FROM user WHERE user_id = '" . db_escape($uid) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
 		db_free_result ( $result );
-		
-		if ($found && md5 ( $pwd ) == $found ['pwd'])
+
+		if (!$found || strlen((string)$found['pwd']) == 0) {
+			return FALSE;
+		}
+		$stored = $found['pwd'];
+
+		if (substr($stored, 0, 1) === '$') {
+			if (!password_verify($pwd, $stored)) {
+				return FALSE;
+			}
+			if (password_needs_rehash($stored, PASSWORD_DEFAULT)) {
+				update_user_passwd($uid, $pwd);
+			}
 			return TRUE;
+		}
+
+		// legacy unsalted md5: accept once and replace it with a real hash
+		if (hash_equals($stored, md5($pwd))) {
+			if (is_user_passwd_column_wide()) {
+				update_user_passwd($uid, $pwd);
+			}
+			return TRUE;
+		}
 	}
-	
+
 	//else
 	return FALSE;
 }
@@ -467,7 +520,7 @@ function activate_user($uid) {
 // makes the change.
 //
 function update_user_passwd($uid, $pwd) {
-	$query = "UPDATE user SET pwd = '" . db_escape((strlen ( $pwd ) > 0 ? md5 ( $pwd ) : "")) . "' WHERE user_id='" . db_escape($uid) . "'";
+	$query = "UPDATE user SET pwd = '" . db_escape((strlen ( $pwd ) > 0 ? opendb_hash_passwd ( $pwd ) : "")) . "' WHERE user_id='" . db_escape($uid) . "'";
 	
 	$update = db_query ( $query );
 	// We should not treat updates that were not actually updated because value did not change as failures.
@@ -542,10 +595,10 @@ function update_user($uid, $fullname, $language, $theme, $email_addr, $user_role
 //
 // Insert a New user.  Does not check if $uid exists already, before doing so.
 // This relies on the user_id UNIQUE constraint.  The $uid is the updating user.
-// Will do md5($pwd) before inserting...
+// Hashes $pwd (opendb_hash_passwd) before inserting...
 //
 function insert_user($uid, $fullname, $pwd, $user_role, $language, $theme, $email_addr, $active_ind = 'Y') {
-	$query = "INSERT INTO user (user_id, fullname, pwd, user_role, email_addr, language, theme, active_ind, lastvisit)" . "VALUES('" . db_escape($uid) . "'," . "'" . addslashes ( $fullname ) . "'," . (strlen ( $pwd ) > 0 ? ("'" . md5 ( $pwd ) . "'") : "NULL") . "," . "'" . addslashes ( $user_role ) . "'," . "'" . addslashes ( $email_addr ) . "'," . "'" . addslashes ( $language ) . "'," . "'" . addslashes ( $theme ) . "'," . "'" . db_escape($active_ind) . "'," . "'0000-00-00 00:00:00')";
+	$query = "INSERT INTO user (user_id, fullname, pwd, user_role, email_addr, language, theme, active_ind, lastvisit)" . "VALUES('" . db_escape($uid) . "'," . "'" . addslashes ( $fullname ) . "'," . (strlen ( $pwd ) > 0 ? ("'" . db_escape(opendb_hash_passwd ( $pwd )) . "'") : "NULL") . "," . "'" . addslashes ( $user_role ) . "'," . "'" . addslashes ( $email_addr ) . "'," . "'" . addslashes ( $language ) . "'," . "'" . addslashes ( $theme ) . "'," . "'" . db_escape($active_ind) . "'," . "'0000-00-00 00:00:00')";
 	
 	$insert = db_query ( $query );
 	if ($insert && db_affected_rows () > 0) {
