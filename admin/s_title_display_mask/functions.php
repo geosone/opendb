@@ -39,7 +39,7 @@ function fetch_title_mask_items_r($stdm_id, $s_item_type_group, $s_item_type) {
 	if (strlen($s_item_type_group) == 0)
 		$s_item_type_group = '*';
 
-	$query = "SELECT display_mask FROM s_title_display_mask_item " . "WHERE stdm_id = '$stdm_id' AND s_item_type_group = '$s_item_type_group' AND s_item_type = '$s_item_type'";
+	$query = "SELECT display_mask FROM s_title_display_mask_item " . "WHERE stdm_id = '" . db_escape($stdm_id) . "' AND s_item_type_group = '" . db_escape($s_item_type_group) . "' AND s_item_type = '" . db_escape($s_item_type) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -52,7 +52,7 @@ function fetch_title_mask_items_r($stdm_id, $s_item_type_group, $s_item_type) {
 
 function is_exists_s_title_display_mask($stdm_id) {
 	if (strlen($stdm_id) > 0) {
-		$query = "SELECT 'x' FROM s_title_display_mask WHERE id = '$stdm_id'";
+		$query = "SELECT 'x' FROM s_title_display_mask WHERE id = '" . db_escape($stdm_id) . "'";
 
 		$result = db_query($query);
 		if ($result && db_num_rows($result) > 0) {
@@ -71,7 +71,7 @@ function is_exists_s_title_display_mask_group($s_item_type_group, $s_item_type) 
 	if ($s_item_type == NULL)
 		$s_item_type = '*';
 
-	$query = "SELECT 'X' FROM s_title_display_mask_item WHERE s_item_type_group = '$s_item_type_group' AND s_item_type = '$s_item_type'";
+	$query = "SELECT 'X' FROM s_title_display_mask_item WHERE s_item_type_group = '" . db_escape($s_item_type_group) . "' AND s_item_type = '" . db_escape($s_item_type) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -85,7 +85,7 @@ function is_exists_s_title_display_mask_group($s_item_type_group, $s_item_type) 
 
 function is_exists_s_title_display_mask_item($stdm_id, $s_item_type_group, $s_item_type) {
 	if (strlen($stdm_id) > 0) {
-		$query = "SELECT 'x' FROM s_title_display_mask_item " . "WHERE stdm_id = '$stdm_id' AND s_item_type_group = '$s_item_type_group' AND s_item_type = '$s_item_type'";
+		$query = "SELECT 'x' FROM s_title_display_mask_item " . "WHERE stdm_id = '" . db_escape($stdm_id) . "' AND s_item_type_group = '" . db_escape($s_item_type_group) . "' AND s_item_type = '" . db_escape($s_item_type) . "'";
 
 		$result = db_query($query);
 		if ($result && db_num_rows($result) > 0) {
@@ -102,7 +102,7 @@ function insert_s_title_display_mask_item($stdm_id, $s_item_type_group, $s_item_
 		// ensure parent record exists
 		if (is_exists_s_title_display_mask($stdm_id)) {
 			if (($s_item_type_group == '*' || is_exists_item_type_group($s_item_type_group)) && ($s_item_type == '*' || is_exists_item_type($s_item_type))) {
-				$query = "INSERT INTO s_title_display_mask_item (stdm_id, s_item_type_group, s_item_type, display_mask) " . "VALUES ('$stdm_id', '$s_item_type_group', '$s_item_type', '" . addslashes(trim(strip_tags($display_mask))) . "')";
+				$query = "INSERT INTO s_title_display_mask_item (stdm_id, s_item_type_group, s_item_type, display_mask) " . "VALUES ('" . db_escape($stdm_id) . "', '" . db_escape($s_item_type_group) . "', '" . db_escape($s_item_type) . "', '" . addslashes(trim(strip_tags($display_mask))) . "')";
 
 				$insert = db_query($query);
 				if ($insert && db_affected_rows() > 0) {
@@ -132,7 +132,7 @@ function update_s_title_display_mask_item($stdm_id, $s_item_type_group, $s_item_
 	if (strlen($stdm_id) > 0 && strlen($s_item_type_group) > 0 && strlen($s_item_type) > 0 && strlen($display_mask) > 0) {
 		// ensure parent record exists
 		if (is_exists_s_title_display_mask_item($stdm_id, $s_item_type_group, $s_item_type)) {
-			$query = "UPDATE s_title_display_mask_item " . "SET display_mask = '" . addslashes(trim(strip_tags($display_mask))) . "'" . " WHERE stdm_id = '$stdm_id' AND " . "s_item_type_group = '$s_item_type_group' AND " . "s_item_type = '$s_item_type'";
+			$query = "UPDATE s_title_display_mask_item " . "SET display_mask = '" . addslashes(trim(strip_tags($display_mask))) . "'" . " WHERE stdm_id = '" . db_escape($stdm_id) . "' AND " . "s_item_type_group = '" . db_escape($s_item_type_group) . "' AND " . "s_item_type = '" . db_escape($s_item_type) . "'";
 
 			$update = db_query($query);
 
@@ -160,7 +160,7 @@ function delete_s_title_display_mask_item($stdm_id, $s_item_type_group, $s_item_
 	if (strlen($stdm_id) > 0 && strlen($s_item_type_group) > 0 && strlen($s_item_type) > 0) {
 		// ensure parent record exists
 		if (is_exists_s_title_display_mask($stdm_id)) {
-			$query = "DELETE FROM s_title_display_mask_item " . " WHERE stdm_id = '$stdm_id' AND " . "s_item_type_group = '$s_item_type_group' AND " . "s_item_type = '$s_item_type'";
+			$query = "DELETE FROM s_title_display_mask_item " . " WHERE stdm_id = '" . db_escape($stdm_id) . "' AND " . "s_item_type_group = '" . db_escape($s_item_type_group) . "' AND " . "s_item_type = '" . db_escape($s_item_type) . "'";
 
 			$delete = db_query($query);
 			// We should not treat deletes that were not actually updated because value did not change as failures.

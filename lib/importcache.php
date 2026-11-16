@@ -51,12 +51,12 @@ function import_cache_get_cache_directory() {
 */
 function fetch_import_cache_r($sequence_number, $user_id = NULL) {
 	if (is_numeric ( $sequence_number )) {
-		$query = "SELECT user_id, plugin_name, content_length, cache_file " . "FROM import_cache " . "WHERE sequence_number = '$sequence_number'";
+		$query = "SELECT user_id, plugin_name, content_length, cache_file " . "FROM import_cache " . "WHERE sequence_number = '" . db_escape($sequence_number) . "'";
 		
 		// allows to enforce the fact that this user owns the
 		// particular record.
 		if (strlen ( $user_id ) > 0) {
-			$query .= " AND user_id = '$user_id'";
+			$query .= " AND user_id = '" . db_escape($user_id) . "'";
 		}
 		
 		$result = db_query ( $query );
@@ -78,7 +78,7 @@ function fetch_import_cache_r($sequence_number, $user_id = NULL) {
  * @return unknown
  */
 function import_cache_fetch_file($sequence_number) {
-	$query = "SELECT cache_file FROM import_cache WHERE sequence_number = '$sequence_number'";
+	$query = "SELECT cache_file FROM import_cache WHERE sequence_number = '" . db_escape($sequence_number) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$record_r = db_fetch_assoc ( $result );
@@ -109,7 +109,7 @@ function import_cache_insert($user_id, $plugin_name, $infile_location) {
 		if ($content_length > 0) {
 			$directory = import_cache_get_cache_directory ();
 			if (is_dir ( $directory )) {
-				$query = "INSERT INTO import_cache(user_id, plugin_name, content_length, cache_file)" . " VALUES ('$user_id','$plugin_name','$content_length', '$cache_file')";
+				$query = "INSERT INTO import_cache(user_id, plugin_name, content_length, cache_file)" . " VALUES ('" . db_escape($user_id) . "','" . db_escape($plugin_name) . "','" . db_escape($content_length) . "', '" . db_escape($cache_file) . "')";
 				
 				$insert = db_query ( $query );
 				if ($insert && db_affected_rows () > 0) {
@@ -168,9 +168,9 @@ function import_cache_insert($user_id, $plugin_name, $infile_location) {
 }
 
 function import_cache_update_cachefile($sequence_number, $cache_file) {
-	$cache_file = addslashes ( $cache_file );
+	$cache_file =  $cache_file ;
 	
-	$update = db_query ( "UPDATE import_cache SET cache_file = '$cache_file' WHERE sequence_number = '$sequence_number'" );
+	$update = db_query ( "UPDATE import_cache SET cache_file = '" . db_escape($cache_file) . "' WHERE sequence_number = '" . db_escape($sequence_number) . "'" );
 	$rows_affected = db_affected_rows ();
 	if ($update && db_affected_rows () > 0) {
 		opendb_logger ( OPENDB_LOG_INFO, __FILE__, __FUNCTION__, NULL, array (
@@ -188,7 +188,7 @@ function import_cache_update_cachefile($sequence_number, $cache_file) {
 function import_cache_delete($sequence_number) {
 	$cache_r = fetch_import_cache_r ( $sequence_number );
 	if (is_array ( $cache_r )) {
-		$query = "DELETE FROM import_cache WHERE sequence_number = '$sequence_number'";
+		$query = "DELETE FROM import_cache WHERE sequence_number = '" . db_escape($sequence_number) . "'";
 		$delete = db_query ( $query );
 		if ($delete && db_affected_rows () > 0) {
 			opendb_logger ( OPENDB_LOG_INFO, __FILE__, __FUNCTION__, 'Deleted import_cache record', array (
@@ -212,7 +212,7 @@ function import_cache_delete_for_user($user_id) {
 	import_cache_get_cache_directory ();
 	
 	if (db_query ( "LOCK TABLES import_cache WRITE" )) {
-		$query = "SELECT sequence_number FROM import_cache WHERE user_id = '$user_id'";
+		$query = "SELECT sequence_number FROM import_cache WHERE user_id = '" . db_escape($user_id) . "'";
 		$results = db_query ( $query );
 		if ($results) {
 			while ( $import_cache_r = db_fetch_assoc ( $results ) ) {

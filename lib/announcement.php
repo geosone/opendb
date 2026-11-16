@@ -117,7 +117,7 @@ function fetch_announcement_cnt($limit_days = 'N', $limit_closed = 'N') {
 	This will return an annoucement record for a given id
 */
 function fetch_announcement_r($announcement_id) {
-	$query = "SELECT sequence_number as announcement_id, user_id, title, content, " . " UNIX_TIMESTAMP(submit_on) as submit_on, " . " display_days, closed_ind " . " FROM announcement " . " WHERE sequence_number = " . $announcement_id;
+	$query = "SELECT sequence_number as announcement_id, user_id, title, content, " . " UNIX_TIMESTAMP(submit_on) as submit_on, " . " display_days, closed_ind " . " FROM announcement " . " WHERE sequence_number = " . db_int($announcement_id);
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -133,7 +133,7 @@ function fetch_announcement_r($announcement_id) {
 	Returns the announcement title.
 */
 function fetch_announcement_title($announcement_id) {
-	$query = "SELECT title FROM announcement where sequence_number = " . $announcement_id;
+	$query = "SELECT title FROM announcement where sequence_number = " . db_int($announcement_id);
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {

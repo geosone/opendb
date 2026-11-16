@@ -34,7 +34,7 @@ function generate_language_sql($language, $options = NULL) {
 	if (is_not_empty_array($language_r)) {
 		$sqlscript = '#########################################################' . $CRLF . '# OpenDb ' . get_opendb_version() . ' \'' . $language . '\' Language Pack' . $CRLF . '#########################################################' . $CRLF . $CRLF;
 
-		$sqlscript .= "INSERT INTO s_language (language, description, default_ind) " . "VALUES ('" . $language_r['language'] . "', '" . addslashes($language_r['description']) . "', '" . $language_r['default_ind'] . "'); " . $CRLF;
+		$sqlscript .= "INSERT INTO s_language (language, description, default_ind) " . "VALUES ('" . db_escape($language_r['language']) . "', '" . addslashes($language_r['description']) . "', '" . db_escape($language_r['default_ind']) . "'); " . $CRLF;
 
 		$results = fetch_language_langvar_rs($language, $options);
 		if ($results) {
@@ -46,7 +46,7 @@ function generate_language_sql($language, $options = NULL) {
 				else
 					$value = $lang_var_r['value'];
 
-				$sqlscript .= "INSERT INTO s_language_var (language, varname, value) " . "VALUES ('" . $language_r['language'] . "', '" . $lang_var_r['varname'] . "', '" . addslashes($value) . "'); " . $CRLF;
+				$sqlscript .= "INSERT INTO s_language_var (language, varname, value) " . "VALUES ('" . db_escape($language_r['language']) . "', '" . db_escape($lang_var_r['varname']) . "', '" . addslashes($value) . "'); " . $CRLF;
 			}
 			db_free_result($results);
 		}
@@ -71,8 +71,8 @@ function generate_language_sql($language, $options = NULL) {
 										$value = $lang_var_r['value'];
 
 									if (strlen($value)) {
-										$sqlscript .= "INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) " . "VALUES ('" . $language_r['language'] . "', '" . $table . "', '" . $column . "', '" . $lang_var_r['key1'] . "', "
-												. (strlen($lang_var_r['key2']) > 0 ? "'" . $lang_var_r['key2'] . "'" : "''") . ", " . (strlen($lang_var_r['key3']) > 0 ? "'" . $lang_var_r['key3'] . "'" : "''") . ", '" . addslashes($value) . "'); " . $CRLF;
+										$sqlscript .= "INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) " . "VALUES ('" . db_escape($language_r['language']) . "', '" . db_escape($table) . "', '" . db_escape($column) . "', '" . db_escape($lang_var_r['key1']) . "', "
+												. (strlen($lang_var_r['key2']) > 0 ? "'" . db_escape($lang_var_r['key2']) . "'" : "''") . ", " . (strlen($lang_var_r['key3']) > 0 ? "'" . db_escape($lang_var_r['key3']) . "'" : "''") . ", '" . addslashes($value) . "'); " . $CRLF;
 									}
 								}
 								db_free_result($results);
@@ -352,7 +352,7 @@ if ($HTTP_VARS['op'] == 'sql' && is_exists_language($HTTP_VARS['language'])) {
 		} else if ($HTTP_VARS['confirmed'] != 'true') {
 			echo ("\n<h3>Delete Language</h3>");
 
-			echo (get_op_confirm_form($PHP_SELF, "Are you sure you want to delete language '" . $HTTP_VARS['language'] . "'?", array('type' => $ADMIN_TYPE, 'op' => 'delete', 'language' => $HTTP_VARS['language'])));
+			echo (get_op_confirm_form($PHP_SELF, "Are you sure you want to delete language '" . db_escape($HTTP_VARS['language']) . "'?", array('type' => $ADMIN_TYPE, 'op' => 'delete', 'language' => $HTTP_VARS['language'])));
 		} else { // $HTTP_VARS['confirmed'] == 'true'
 			delete_s_language_var($HTTP_VARS['language']);
 			delete_s_table_language_var($HTTP_VARS['language']);

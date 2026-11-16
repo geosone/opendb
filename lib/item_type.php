@@ -33,7 +33,7 @@ function is_exists_any_item_type() {
 
 function is_exists_item_type($s_item_type) {
 	if (strlen ( $s_item_type ) > 0) {
-		$query = "SELECT 'x' FROM s_item_type WHERE s_item_type = '" . $s_item_type . "'";
+		$query = "SELECT 'x' FROM s_item_type WHERE s_item_type = '" . db_escape($s_item_type) . "'";
 		$result = db_query ( $query );
 		if ($result && db_num_rows ( $result ) > 0) {
 			db_free_result ( $result );
@@ -83,7 +83,7 @@ function is_valid_item_type_structure($s_item_type) {
 }
 
 function is_instance_item_attribute_type($s_item_type, $s_attribute_type) {
-	$query = "SELECT instance_attribute_ind FROM s_item_attribute_type WHERE s_item_type = '$s_item_type' AND s_attribute_type = '$s_attribute_type'";
+	$query = "SELECT instance_attribute_ind FROM s_item_attribute_type WHERE s_item_type = '" . db_escape($s_item_type) . "' AND s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -149,7 +149,7 @@ function fetch_item_type_r($s_item_type) {
 			stlv.tablename = 's_item_type' AND
 			stlv.columnname = 'description' AND
 			stlv.key1 = s_item_type 
-	WHERE s_item_type = '$s_item_type'";
+	WHERE s_item_type = '" . db_escape($s_item_type) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
@@ -166,7 +166,7 @@ function fetch_site_item_type_r($site_type) {
 					s_item_attribute_type siat
 			WHERE 	sit.s_item_type = siat.s_item_type AND 
 					sat.s_attribute_type = siat.s_attribute_type AND 
-					sat.site_type = '" . $site_type . "'";
+					sat.site_type = '" . db_escape($site_type) . "'";
 	
 	$results = db_query ( $query );
 	if ($results && db_num_rows ( $results ) > 0) {
@@ -187,7 +187,7 @@ function fetch_site_item_type_r($site_type) {
 	Will return an array of all site-plugins that are compatible with the s_item_type.
 */
 function fetch_site_type_rs($s_item_type) {
-	$query = "SELECT	DISTINCT sat.site_type " . "FROM	s_attribute_type sat," . "s_item_attribute_type siat " . "WHERE 	sat.s_attribute_type = siat.s_attribute_type AND " . "length(sat.site_type)>0 AND " . "siat.s_item_type = '" . $s_item_type . "' " . "order by 1";
+	$query = "SELECT	DISTINCT sat.site_type " . "FROM	s_attribute_type sat," . "s_item_attribute_type siat " . "WHERE 	sat.s_attribute_type = siat.s_attribute_type AND " . "length(sat.site_type)>0 AND " . "siat.s_item_type = '" . db_escape($s_item_type) . "' " . "order by 1";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -203,7 +203,7 @@ function fetch_site_type_rs($s_item_type) {
 	Checks if an s_item_type has any site plugins linked to it.
 */
 function is_item_legal_site_type($s_item_type) {
-	$query = "select	sat.site_type " . "from 	s_attribute_type sat," . "		s_item_attribute_type siat " . "where 	sat.s_attribute_type = siat.s_attribute_type AND " . "length(sat.site_type)>0 AND " . "siat.s_item_type = '" . $s_item_type . "'";
+	$query = "select	sat.site_type " . "from 	s_attribute_type sat," . "		s_item_attribute_type siat " . "where 	sat.s_attribute_type = siat.s_attribute_type AND " . "length(sat.site_type)>0 AND " . "siat.s_item_type = '" . db_escape($s_item_type) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {

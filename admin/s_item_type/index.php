@@ -273,22 +273,22 @@ function generate_s_item_type_sql($s_item_type) {
 
 					$attr_sql .= $CRLF
 							. "INSERT INTO s_attribute_type ( s_attribute_type, description, prompt, input_type, input_type_arg1, input_type_arg2, input_type_arg3, input_type_arg4, input_type_arg5, display_type, display_type_arg1, display_type_arg2, display_type_arg3, display_type_arg4, display_type_arg5, listing_link_ind, file_attribute_ind, lookup_attribute_ind, multi_attribute_ind, s_field_type, site_type ) "
-							. "VALUES ( '" . $s_attribute_type_r['s_attribute_type'] . "', " . "'" . addslashes($s_attribute_type_r['description']) . "', " . "'" . addslashes($s_attribute_type_r['prompt']) . "', " . "'" . $s_attribute_type_r['input_type'] . "', "
+							. "VALUES ( '" . db_escape($s_attribute_type_r['s_attribute_type']) . "', " . "'" . addslashes($s_attribute_type_r['description']) . "', " . "'" . addslashes($s_attribute_type_r['prompt']) . "', " . "'" . db_escape($s_attribute_type_r['input_type']) . "', "
 							. (strlen($s_attribute_type_r['input_type_arg1']) > 0 ? "'" . addslashes($s_attribute_type_r['input_type_arg1']) . "'" : "NULL") . ", " . (strlen($s_attribute_type_r['input_type_arg2']) > 0 ? "'" . addslashes($s_attribute_type_r['input_type_arg2']) . "'" : "NULL") . ", "
 							. (strlen($s_attribute_type_r['input_type_arg3']) > 0 ? "'" . addslashes($s_attribute_type_r['input_type_arg3']) . "'" : "NULL") . ", " . (strlen($s_attribute_type_r['input_type_arg4']) > 0 ? "'" . addslashes($s_attribute_type_r['input_type_arg4']) . "'" : "NULL") . ", "
-							. (strlen($s_attribute_type_r['input_type_arg5']) > 0 ? "'" . addslashes($s_attribute_type_r['input_type_arg5']) . "'" : "NULL") . ", " . "'" . $s_attribute_type_r['display_type'] . "',"
+							. (strlen($s_attribute_type_r['input_type_arg5']) > 0 ? "'" . addslashes($s_attribute_type_r['input_type_arg5']) . "'" : "NULL") . ", " . "'" . db_escape($s_attribute_type_r['display_type']) . "',"
 							. (strlen($s_attribute_type_r['display_type_arg1']) > 0 ? "'" . addslashes($s_attribute_type_r['display_type_arg1']) . "'" : "NULL") . ", " . (strlen($s_attribute_type_r['display_type_arg2']) > 0 ? "'" . addslashes($s_attribute_type_r['display_type_arg2']) . "'" : "NULL")
 							. ", " . (strlen($s_attribute_type_r['display_type_arg3']) > 0 ? "'" . addslashes($s_attribute_type_r['display_type_arg3']) . "'" : "NULL") . ", " . (strlen($s_attribute_type_r['display_type_arg4']) > 0 ? "'" . addslashes($s_attribute_type_r['display_type_arg4']) . "'"
-									: "NULL") . ", " . (strlen($s_attribute_type_r['display_type_arg5']) > 0 ? "'" . addslashes($s_attribute_type_r['display_type_arg5']) . "'" : "NULL") . ", " . "'" . $s_attribute_type_r['listing_link_ind'] . "', " . "'" . $s_attribute_type_r['file_attribute_ind']
-							. "', " . "'" . $s_attribute_type_r['lookup_attribute_ind'] . "', " . "'" . $s_attribute_type_r['multi_attribute_ind'] . "', " . (strlen($s_attribute_type_r['s_field_type']) > 0 ? "'" . $s_attribute_type_r['s_field_type'] . "'" : "NULL") . ", "
-							. (strlen($s_attribute_type_r['site_type']) > 0 ? "'" . $s_attribute_type_r['s_field_type'] . "'" : "NULL") . ");";
+									: "NULL") . ", " . (strlen($s_attribute_type_r['display_type_arg5']) > 0 ? "'" . addslashes($s_attribute_type_r['display_type_arg5']) . "'" : "NULL") . ", " . "'" . db_escape($s_attribute_type_r['listing_link_ind']) . "', " . "'" . db_escape($s_attribute_type_r['file_attribute_ind'])
+							. "', " . "'" . db_escape($s_attribute_type_r['lookup_attribute_ind']) . "', " . "'" . db_escape($s_attribute_type_r['multi_attribute_ind']) . "', " . (strlen($s_attribute_type_r['s_field_type']) > 0 ? "'" . db_escape($s_attribute_type_r['s_field_type']) . "'" : "NULL") . ", "
+							. (strlen($s_attribute_type_r['site_type']) > 0 ? "'" . db_escape($s_attribute_type_r['s_field_type']) . "'" : "NULL") . ");";
 
 					$result2 = fetch_attribute_type_lookup_rs($s_item_attribute_type_r['s_attribute_type'], 'value ASC', FALSE);
 					if ($result2) {
 						$attr_lookup_sql .= $CRLF . '#' . $CRLF . '# Attribute Type Lookup (' . $s_item_attribute_type_r['s_attribute_type'] . ')' . $CRLF . '#';
 
 						while ($s_attribute_type_lookup_r = db_fetch_assoc($result2)) {
-							$attr_lookup_sql .= $CRLF . 'INSERT INTO s_attribute_type_lookup ( s_attribute_type, order_no, value, display, img, checked_ind ) VALUES ( \'' . $s_item_attribute_type_r['s_attribute_type'] . '\', '
+							$attr_lookup_sql .= $CRLF . 'INSERT INTO s_attribute_type_lookup ( s_attribute_type, order_no, value, display, img, checked_ind ) VALUES ( \'' . addslashes($s_item_attribute_type_r['s_attribute_type']) . '\', '
 									. (is_numeric($s_attribute_type_lookup_r['order_no']) ? $s_attribute_type_lookup_r['order_no'] : 'NULL') . ', \'' . addslashes($s_attribute_type_lookup_r['value']) . '\', \'' . addslashes($s_attribute_type_lookup_r['display']) . '\', \''
 									. addslashes($s_attribute_type_lookup_r['img']) . '\', \'' . $s_attribute_type_lookup_r['checked_ind'] . '\' );';
 						}
@@ -298,7 +298,7 @@ function generate_s_item_type_sql($s_item_type) {
 					}
 				}
 
-				$item_attr_sql .= $CRLF . 'INSERT INTO s_item_attribute_type ( s_item_type, s_attribute_type, order_no, prompt, instance_attribute_ind, compulsory_ind, printable_ind, rss_ind ) VALUES ( \'' . $s_item_type . '\', \'' . $s_item_attribute_type_r['s_attribute_type'] . '\', '
+				$item_attr_sql .= $CRLF . 'INSERT INTO s_item_attribute_type ( s_item_type, s_attribute_type, order_no, prompt, instance_attribute_ind, compulsory_ind, printable_ind, rss_ind ) VALUES ( \'' . addslashes($s_item_type) . '\', \'' . addslashes($s_item_attribute_type_r['s_attribute_type']) . '\', '
 						. $s_item_attribute_type_r['order_no'] . ', ' . (strlen($s_item_attribute_type_r['prompt']) > 0 ? '\'' . $s_item_attribute_type_r['prompt'] . '\'' : 'NULL') . ', \'' . $s_item_attribute_type_r['instance_attribute_ind'] . '\', \'' . $s_item_attribute_type_r['compulsory_ind']
 						. '\', \'' . $s_item_attribute_type_r['printable_ind'] . '\', \'' . $s_item_attribute_type_r['rss_ind'] . '\' );';
 			}
@@ -327,26 +327,26 @@ function generate_s_item_type_sql($s_item_type) {
  * 	item
  */
 function delete_sitemtype_items($s_item_type) {
-	$result = db_query("SELECT id as item_id FROM item WHERE s_item_type = '" . $s_item_type . "'");
+	$result = db_query("SELECT id as item_id FROM item WHERE s_item_type = '" . db_escape($s_item_type) . "'");
 	if ($result && db_num_rows($result) > 0) {
 		while ($item_r = db_fetch_assoc($result)) {
-			if (db_query("DELETE FROM review WHERE item_id = " . $item_r['item_id']) && db_affected_rows() > 0) {
+			if (db_query("DELETE FROM review WHERE item_id = " . db_int($item_r['item_id'])) && db_affected_rows() > 0) {
 				opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, 'User deleted system item type review records', array($s_item_type));
 			}
 
-			if (db_query("DELETE FROM borrowed_item WHERE item_id = " . $item_r['item_id']) && db_affected_rows() > 0) {
+			if (db_query("DELETE FROM borrowed_item WHERE item_id = " . db_int($item_r['item_id'])) && db_affected_rows() > 0) {
 				opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, 'User deleted system item type borrowed_item records', array($s_item_type));
 			}
 
-			if (db_query("DELETE FROM item_attribute WHERE item_id = " . $item_r['item_id']) && db_affected_rows() > 0) {
+			if (db_query("DELETE FROM item_attribute WHERE item_id = " . db_int($item_r['item_id'])) && db_affected_rows() > 0) {
 				opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, 'User deleted system item type item_attribute records', array($s_item_type));
 			}
 
-			if (db_query("DELETE FROM item_instance WHERE item_id = " . $item_r['item_id']) && db_affected_rows() > 0) {
+			if (db_query("DELETE FROM item_instance WHERE item_id = " . db_int($item_r['item_id'])) && db_affected_rows() > 0) {
 				opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, 'User deleted system item type item_instance records', array($s_item_type));
 			}
 
-			if (db_query("DELETE FROM item WHERE id = " . $item_r['item_id']) && db_affected_rows() > 0) {
+			if (db_query("DELETE FROM item WHERE id = " . db_int($item_r['item_id'])) && db_affected_rows() > 0) {
 				opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, 'User deleted system item type item records', array($s_item_type));
 			}
 		}

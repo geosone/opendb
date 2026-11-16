@@ -24,7 +24,7 @@ include_once("./lib/utils.php");
 
 function is_exists_address_type($s_address_type) {
 	if (strlen ( $s_address_type ) > 0) {
-		$query = "SELECT 'x' FROM s_address_type WHERE s_address_type = '" . $s_address_type . "'";
+		$query = "SELECT 'x' FROM s_address_type WHERE s_address_type = '" . db_escape($s_address_type) . "'";
 		$result = db_query ( $query );
 		if ($result && db_num_rows ( $result ) > 0) {
 			db_free_result ( $result );
@@ -83,7 +83,7 @@ function fetch_user_address_type_r($user_id, $address_type) {
 			ON stlv.language = '" . get_opendb_site_language () . "' AND
 			stlv.tablename = 's_address_type' AND
 			stlv.columnname = 'description' AND
-			stlv.key1 = sadt.s_address_type " . "WHERE ua.user_id = '" . $user_id . "' AND " . "ua.s_address_type = '" . $address_type . "' AND " . "ua.start_dt <= now() AND (ua.end_dt IS NULL OR ua.end_dt < now()) AND " . "sadt.s_address_type = ua.s_address_type ";
+			stlv.key1 = sadt.s_address_type " . "WHERE ua.user_id = '" . db_escape($user_id) . "' AND " . "ua.s_address_type = '" . db_escape($address_type) . "' AND " . "ua.start_dt <= now() AND (ua.end_dt IS NULL OR ua.end_dt < now()) AND " . "sadt.s_address_type = ua.s_address_type ";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -99,7 +99,7 @@ function fetch_user_address_type_r($user_id, $address_type) {
 function fetch_user_address_type_rs($user_id, $order_by = FALSE) {
 	$query = "SELECT ua.sequence_number, " . "ua.public_address_ind, " . "ua.borrow_address_ind, " . "sadt.s_address_type, " . "IFNULL(stlv.value, sadt.description) AS description " . "FROM (s_address_type sadt) ";
 	
-	$query .= "LEFT JOIN user_address ua " . "ON ua.user_id = '" . $user_id . "' AND " . "ua.s_address_type = sadt.s_address_type AND " . "ua.start_dt <= now() AND (ua.end_dt IS NULL OR ua.end_dt < now()) ";
+	$query .= "LEFT JOIN user_address ua " . "ON ua.user_id = '" . db_escape($user_id) . "' AND " . "ua.s_address_type = sadt.s_address_type AND " . "ua.start_dt <= now() AND (ua.end_dt IS NULL OR ua.end_dt < now()) ";
 	
 	$query .= "LEFT JOIN s_table_language_var stlv
 			ON stlv.language = '" . get_opendb_site_language () . "' AND
@@ -126,12 +126,12 @@ function fetch_user_address_type_rs($user_id, $order_by = FALSE) {
 */
 function fetch_user_address_attribute_val($ua_sequence_number, $s_attribute_type, $order_no = NULL) {
 	// Only load previous record if edit.
-	$query = "SELECT uaa.attribute_val " . "FROM user_address ua," . "user_address_attribute uaa " . "WHERE ua.sequence_number = '" . $ua_sequence_number . "' AND " . "ua.start_dt <= now() AND (ua.end_dt IS NULL OR ua.end_dt < now()) AND " . "uaa.ua_sequence_number = ua.sequence_number AND " . "uaa.s_attribute_type = '" . $s_attribute_type . "' ";
+	$query = "SELECT uaa.attribute_val " . "FROM user_address ua," . "user_address_attribute uaa " . "WHERE ua.sequence_number = '" . db_escape($ua_sequence_number) . "' AND " . "ua.start_dt <= now() AND (ua.end_dt IS NULL OR ua.end_dt < now()) AND " . "uaa.ua_sequence_number = ua.sequence_number AND " . "uaa.s_attribute_type = '" . db_escape($s_attribute_type) . "' ";
 	
 	// Only add order_no where condition if order_no defined, otherwise we
 	// will return the first instance of s_attribute_type.
 	if (is_numeric ( $order_no ))
-		$query .= "AND uaa.order_no = '" . $order_no . "' ";
+		$query .= "AND uaa.order_no = '" . db_escape($order_no) . "' ";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -144,12 +144,12 @@ function fetch_user_address_attribute_val($ua_sequence_number, $s_attribute_type
 
 function fetch_user_address_lookup_attribute_val($ua_sequence_number, $s_attribute_type, $order_no = NULL) {
 	// Only load previous record if edit.
-	$query = "SELECT uaa.lookup_attribute_val " . "FROM user_address ua," . "user_address_attribute uaa " . "WHERE ua.sequence_number = '" . $ua_sequence_number . "' AND " . "ua.start_dt <= now() AND (ua.end_dt IS NULL OR ua.end_dt < now()) AND " . "uaa.ua_sequence_number = ua.sequence_number AND " . "uaa.s_attribute_type = '" . $s_attribute_type . "' ";
+	$query = "SELECT uaa.lookup_attribute_val " . "FROM user_address ua," . "user_address_attribute uaa " . "WHERE ua.sequence_number = '" . db_escape($ua_sequence_number) . "' AND " . "ua.start_dt <= now() AND (ua.end_dt IS NULL OR ua.end_dt < now()) AND " . "uaa.ua_sequence_number = ua.sequence_number AND " . "uaa.s_attribute_type = '" . db_escape($s_attribute_type) . "' ";
 	
 	// Only add order_no where condition if order_no defined, otherwise we
 	// will return the first instance of s_attribute_type.
 	if (is_numeric ( $order_no ))
-		$query .= "AND uaa.order_no = '" . $order_no . "' ";
+		$query .= "AND uaa.order_no = '" . db_escape($order_no) . "' ";
 	
 	$results = db_query ( $query );
 	if ($results && db_num_rows ( $results ) > 0) {
@@ -208,7 +208,7 @@ function fetch_address_type_attribute_type_rs($s_address_type, $mode = 'query', 
 			ON stlv2.language = '" . get_opendb_site_language () . "' AND
 			stlv2.tablename = 's_attribute_type' AND
 			stlv2.columnname = 'prompt' AND
-			stlv2.key1 = sat.s_attribute_type " . "WHERE sadt.s_address_type = '" . $s_address_type . "' AND " . "saatr.s_address_type = sadt.s_address_type AND " . "sat.s_attribute_type = saatr.s_attribute_type ";
+			stlv2.key1 = sat.s_attribute_type " . "WHERE sadt.s_address_type = '" . db_escape($s_address_type) . "' AND " . "saatr.s_address_type = sadt.s_address_type AND " . "sat.s_attribute_type = saatr.s_attribute_type ";
 	
 	if ($mode == 'update') {
 		// do not close for display purposes, only update
@@ -228,7 +228,7 @@ function fetch_address_type_attribute_type_rs($s_address_type, $mode = 'query', 
 }
 
 function is_exists_valid_user_address($user_id, $s_address_type) {
-	$query = "SELECT 'x' FROM user_address WHERE user_id = '$user_id' AND " . "s_address_type = '$s_address_type' AND " . "start_dt <= now() AND (end_dt IS NULL OR end_dt < now()) ";
+	$query = "SELECT 'x' FROM user_address WHERE user_id = '" . db_escape($user_id) . "' AND " . "s_address_type = '" . db_escape($s_address_type) . "' AND " . "start_dt <= now() AND (end_dt IS NULL OR end_dt < now()) ";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -249,7 +249,7 @@ function insert_user_address($user_id, $s_address_type, $public_address_ind, $bo
 		$public_address_ind = validate_ind_column ( $public_address_ind );
 		$borrow_address_ind = validate_ind_column ( $borrow_address_ind );
 		
-		$query = "INSERT INTO user_address (user_id, s_address_type, start_dt, end_dt, public_address_ind, borrow_address_ind)" . " VALUES ('" . $user_id . "','" . $s_address_type . "'," . (strlen ( $start_dt ) > 0 ? $start_dt : "now()") . ", " . (strlen ( $end_dt ) > 0 ? "'" . $end_dt . "'" : "NULL") . ", '$public_address_ind', '$borrow_address_ind')";
+		$query = "INSERT INTO user_address (user_id, s_address_type, start_dt, end_dt, public_address_ind, borrow_address_ind)" . " VALUES ('" . db_escape($user_id) . "','" . db_escape($s_address_type) . "'," . (strlen ( $start_dt ) > 0 ? $start_dt : "now()") . ", " . (strlen ( $end_dt ) > 0 ? "'" . db_escape($end_dt) . "'" : "NULL") . ", '" . db_escape($public_address_ind) . "', '" . db_escape($borrow_address_ind) . "')";
 		
 		$insert = db_query ( $query );
 		if ($insert && db_affected_rows () > 0) {
@@ -287,7 +287,7 @@ function update_user_address($sequence_number, $public_address_ind, $borrow_addr
 		$public_address_ind = validate_ind_column ( $public_address_ind );
 		$borrow_address_ind = validate_ind_column ( $borrow_address_ind );
 		
-		$query = "UPDATE user_address SET " . "public_address_ind = '" . $public_address_ind . "'" . ", borrow_address_ind = '" . $borrow_address_ind . "'" . " WHERE sequence_number = $sequence_number";
+		$query = "UPDATE user_address SET " . "public_address_ind = '" . db_escape($public_address_ind) . "'" . ", borrow_address_ind = '" . db_escape($borrow_address_ind) . "'" . " WHERE sequence_number = $sequence_number";
 		
 		$update = db_query ( $query );
 		// We should not treat updates that were not actually updated because value did not change as failures.
@@ -318,7 +318,7 @@ function update_user_address($sequence_number, $public_address_ind, $borrow_addr
 */
 function delete_user_addresses($user_id) {
 	if (db_query ( "LOCK TABLES user_address WRITE, user_address_attribute WRITE" )) {
-		$query = "SELECT sequence_number FROM user_address WHERE user_id='" . $user_id . "'";
+		$query = "SELECT sequence_number FROM user_address WHERE user_id='" . db_escape($user_id) . "'";
 		
 		$failures = 0;
 		$results = db_query ( $query );
@@ -353,7 +353,7 @@ function delete_user_addresses($user_id) {
 	This function does not check for any dependencies.
 */
 function delete_user_address($sequence_number) {
-	$query = "DELETE FROM user_address WHERE sequence_number = '" . $sequence_number . "'";
+	$query = "DELETE FROM user_address WHERE sequence_number = '" . db_escape($sequence_number) . "'";
 	$delete = db_query ( $query );
 	if ($delete && db_affected_rows () > 0) {
 		opendb_logger ( OPENDB_LOG_INFO, __FILE__, __FUNCTION__, NULL, array (
@@ -383,12 +383,12 @@ function _insert_or_update_user_address_attributes($ua_sequence_number, $s_attri
 	if (db_query ( "LOCK TABLES user_address_attribute WRITE" )) {
 		if (delete_user_address_attributes ( $ua_sequence_number, $s_attribute_type, $order_no )) {
 			if (! is_array ( $attribute_val_r ))
-				$value_r [] = addslashes ( trim ( strip_tags ( $attribute_val_r ) ) );
+				$value_r [] =  trim ( strip_tags ( $attribute_val_r ) ) ;
 			else {
 				$value_r = NULL;
 				
 				for($i = 0; $i < count ( $attribute_val_r ); $i ++) {
-					$value = addslashes ( trim ( strip_tags ( $attribute_val_r [$i] ) ) );
+					$value =  trim ( strip_tags ( $attribute_val_r [$i] ) ) ;
 					
 					// lets make sure this $value does not already exist
 					if (is_array ( $value_r )) {
@@ -409,7 +409,7 @@ function _insert_or_update_user_address_attributes($ua_sequence_number, $s_attri
 			for($i = 0; $i < count ( $value_r ); $i ++) {
 				$attribute_val = $value_r [$i];
 				
-				$query = $insert_cols . "VALUES ('$ua_sequence_number','$s_attribute_type', $order_no, " . ($i + 1) . ", '$attribute_val')";
+				$query = $insert_cols . "VALUES ('" . db_escape($ua_sequence_number) . "','" . db_escape($s_attribute_type) . "', $order_no, " . ($i + 1) . ", '" . db_escape($attribute_val) . "')";
 				
 				$insert = db_query ( $query );
 				if ($insert && db_affected_rows () > 0) {
@@ -450,10 +450,10 @@ function _insert_or_update_user_address_attributes($ua_sequence_number, $s_attri
 //
 function delete_user_address_attributes($ua_sequence_number, $s_attribute_type = NULL, $order_no = NULL) {
 	if (is_numeric ( $ua_sequence_number )) {
-		$query = "DELETE FROM user_address_attribute " . "WHERE ua_sequence_number = '" . $ua_sequence_number . "'";
+		$query = "DELETE FROM user_address_attribute " . "WHERE ua_sequence_number = '" . db_escape($ua_sequence_number) . "'";
 		
 		if (strlen ( $s_attribute_type ) > 0 && is_numeric ( $order_no )) {
-			$query .= " AND s_attribute_type = '" . $s_attribute_type . "' and order_no = '" . $order_no . "'";
+			$query .= " AND s_attribute_type = '" . db_escape($s_attribute_type) . "' and order_no = '" . db_escape($order_no) . "'";
 		}
 		
 		$delete = db_query ( $query );

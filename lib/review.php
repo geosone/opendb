@@ -41,7 +41,7 @@ function is_item_reviewed($item_id) {
 			}
 		}
 	} else {
-		$query .= "WHERE r.item_id = $item_id";
+		$query .= "WHERE r.item_id = " . db_int($item_id);
 	}
 	
 	$query .= " LIMIT 0,1";
@@ -116,7 +116,7 @@ function fetch_review_rating($item_id = NULL) {
 				}
 			}
 		} else {
-			$query .= "WHERE r.item_id = $item_id";
+			$query .= "WHERE r.item_id = " . db_int($item_id);
 		}
 	} else {
 		$query = "SELECT rating FROM review";
@@ -145,7 +145,7 @@ function fetch_review_rating($item_id = NULL) {
 }
 
 function is_exists_review($sequence_number) {
-	$query = "SELECT 'x' FROM review WHERE sequence_number = '$sequence_number'";
+	$query = "SELECT 'x' FROM review WHERE sequence_number = '" . db_escape($sequence_number) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -161,7 +161,7 @@ function is_review_author($sequence_number, $author_id = NULL) {
 	if ($author_id == NULL)
 		$author_id = get_opendb_session_var ( 'user_id' );
 	
-	$query = "SELECT author_id FROM review " . "WHERE sequence_number = $sequence_number";
+	$query = "SELECT author_id FROM review " . "WHERE sequence_number = " . db_int($sequence_number);
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -179,7 +179,7 @@ function is_review_author($sequence_number, $author_id = NULL) {
 	Returns a count of items stored in the database, or false if none found.
 */
 function fetch_review_atdate_cnt($update_on) {
-	$query = "SELECT COUNT(r.item_id) AS count FROM review r WHERE r.update_on >= '$update_on'";
+	$query = "SELECT COUNT(r.item_id) AS count FROM review r WHERE r.update_on >= '" . db_escape($update_on) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
@@ -199,7 +199,7 @@ function fetch_review_atdate_cnt($update_on) {
 function fetch_review_cnt($s_item_type = NULL) {
 	$query = "SELECT COUNT(r.item_id) AS count FROM review r";
 	if ($s_item_type)
-		$query .= ", item i WHERE r.item_id = i.id AND i.s_item_type = '$s_item_type'";
+		$query .= ", item i WHERE r.item_id = i.id AND i.s_item_type = '" . db_escape($s_item_type) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -214,7 +214,7 @@ function fetch_review_cnt($s_item_type = NULL) {
 }
 
 function fetch_review_r($sequence_number) {
-	$query = "SELECT r.sequence_number, i.id as item_id, i.title, i.s_item_type, r.author_id, r.comment, r.rating, UNIX_TIMESTAMP(r.update_on) AS update_on" . " FROM review r, item i" . " WHERE r.item_id = i.id AND r.sequence_number = $sequence_number";
+	$query = "SELECT r.sequence_number, i.id as item_id, i.title, i.s_item_type, r.author_id, r.comment, r.rating, UNIX_TIMESTAMP(r.update_on) AS update_on" . " FROM review r, item i" . " WHERE r.item_id = i.id AND r.sequence_number = " . db_int($sequence_number);
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -229,7 +229,7 @@ function fetch_review_r($sequence_number) {
 * @param $author_id
 */
 function fetch_author_review_cnt($author_id) {
-	$query = "SELECT COUNT('X') AS count FROM review WHERE author_id = '$author_id'";
+	$query = "SELECT COUNT('X') AS count FROM review WHERE author_id = '" . db_escape($author_id) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -250,9 +250,9 @@ function fetch_author_review_cnt($author_id) {
 */
 function is_user_author($user_id, $exclude_user_items = FALSE) {
 	if ($exclude_user_items !== TRUE) {
-		$query = "SELECT 'X' FROM review WHERE author_id = '$user_id'";
+		$query = "SELECT 'X' FROM review WHERE author_id = '" . db_escape($user_id) . "'";
 	} else {
-		$query = "SELECT 'X' " . "FROM review r, item_instance ii " . "WHERE r.item_id = ii.item_id AND " . "r.author_id = '$user_id' AND " . "ii.owner_id <> '$user_id'";
+		$query = "SELECT 'X' " . "FROM review r, item_instance ii " . "WHERE r.item_id = ii.item_id AND " . "r.author_id = '" . db_escape($user_id) . "' AND " . "ii.owner_id <> '" . db_escape($user_id) . "'";
 	}
 	
 	$result = db_query ( $query );
@@ -270,9 +270,9 @@ function is_user_author($user_id, $exclude_user_items = FALSE) {
 //
 function insert_review($item_id, $author_id, $comment, $rating) {
 	// Ensure no html can be used!
-	$comment = addslashes ( replace_newlines ( trim ( $comment ) ) );
+	$comment =  replace_newlines ( trim ( $comment ) ) ;
 	
-	$query = "INSERT INTO review (item_id,author_id,comment,rating)" . "VALUES ('$item_id','$author_id','$comment','$rating')";
+	$query = "INSERT INTO review (item_id,author_id,comment,rating)" . "VALUES ('" . db_escape($item_id) . "','" . db_escape($author_id) . "','" . db_escape($comment) . "','" . db_escape($rating) . "')";
 	$insert = db_query ( $query );
 	if ($insert && db_affected_rows () > 0) {
 		opendb_logger ( OPENDB_LOG_INFO, __FILE__, __FUNCTION__, NULL, array (
@@ -295,9 +295,9 @@ function insert_review($item_id, $author_id, $comment, $rating) {
 */
 function update_review($sequence_number, $comment, $rating) {
 	// Ensure no html can be used!
-	$comment = addslashes ( replace_newlines ( trim ( $comment ) ) );
+	$comment =  replace_newlines ( trim ( $comment ) ) ;
 	
-	$query = "UPDATE review " . "SET comment = '$comment'," . " rating = '$rating' " . "WHERE sequence_number = $sequence_number";
+	$query = "UPDATE review " . "SET comment = '" . db_escape($comment) . "'," . " rating = '" . db_escape($rating) . "' " . "WHERE sequence_number = " . db_int($sequence_number);
 	
 	$update = db_query ( $query );
 	// We should not treat updates that were not actually updated because value did not change as failures.
@@ -322,7 +322,7 @@ function update_review($sequence_number, $comment, $rating) {
 * Delete a single review
 */
 function delete_review($sequence_number) {
-	$query = "DELETE FROM review WHERE sequence_number = '$sequence_number'";
+	$query = "DELETE FROM review WHERE sequence_number = '" . db_escape($sequence_number) . "'";
 	$delete = db_query ( $query );
 	
 	if ($delete && db_affected_rows () > 0) {
@@ -340,7 +340,7 @@ function delete_review($sequence_number) {
 * Delete all reviews for an item_id
 */
 function delete_reviews($item_id) {
-	$query = "DELETE FROM review WHERE item_id = '$item_id'";
+	$query = "DELETE FROM review WHERE item_id = '" . db_escape($item_id) . "'";
 	$delete = db_query ( $query );
 	// doesn't matter if no items deleted, as long as operation was successful.
 	if ($delete) {
@@ -355,7 +355,7 @@ function delete_reviews($item_id) {
 }
 
 function delete_author_reviews($author_id) {
-	$query = "DELETE FROM review WHERE author_id = '$author_id'";
+	$query = "DELETE FROM review WHERE author_id = '" . db_escape($author_id) . "'";
 	$delete = db_query ( $query );
 	// doesn't matter if no items deleted, as long as operation was successful.
 	if ($delete) {

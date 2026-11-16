@@ -63,9 +63,9 @@ function is_user_owner_of_item($item_id, $instance_no, $user_id = NULL) {
 	if (strlen ( $user_id ) == 0)
 		$user_id = get_opendb_session_var ( 'user_id' );
 	
-	$query = "SELECT 'x' FROM item_instance WHERE item_id = '$item_id' AND owner_id = '$user_id' ";
+	$query = "SELECT 'x' FROM item_instance WHERE item_id = '" . db_escape($item_id) . "' AND owner_id = '" . db_escape($user_id) . "' ";
 	if (is_numeric ( $instance_no ))
-		$query .= " AND instance_no = '$instance_no' ";
+		$query .= " AND instance_no = '" . db_escape($instance_no) . "' ";
 	
 	$result = db_query ( $query );
 	// The very fact that at least one row was returned indicates that owner
@@ -76,13 +76,13 @@ function is_user_owner_of_item($item_id, $instance_no, $user_id = NULL) {
 /**
 */
 function fetch_item_owner_id($item_id, $instance_no) {
-	$query = "SELECT owner_id FROM item_instance WHERE item_id = '$item_id' AND instance_no = '$instance_no'";
+	$query = "SELECT owner_id FROM item_instance WHERE item_id = '" . db_escape($item_id) . "' AND instance_no = '" . db_escape($instance_no) . "'";
 	$result = db_query ( $query );
 	return db_result_single_lookup($result, 'owner_id');
 }
 
 function fetch_item_s_status_type($item_id, $instance_no) {
-	$query = "SELECT s_status_type FROM item_instance WHERE item_id = '$item_id' AND instance_no = '$instance_no'";
+	$query = "SELECT s_status_type FROM item_instance WHERE item_id = '" . db_escape($item_id) . "' AND instance_no = '" . db_escape($instance_no) . "'";
 	$result = db_query ( $query );
 	return db_result_single_lookup($result, 's_status_type');
 }
@@ -97,7 +97,7 @@ function fetch_item_instance_cnt($s_item_type = NULL) {
 	$where = "WHERE i.id = ii.item_id AND u.user_id = ii.owner_id AND u.active_ind = 'Y' AND sst.s_status_type = ii.s_status_type ";
 	
 	if ($s_item_type) {
-		$where .= " AND i.s_item_type = '" . $s_item_type . "' ";
+		$where .= " AND i.s_item_type = '" . db_escape($s_item_type) . "' ";
 	}
 	
 	// no need for such a restriction if current user is item admin
@@ -119,7 +119,7 @@ function fetch_item_instance_rs($item_id, $owner_id = NULL) {
 					u.user_id = ii.owner_id AND 
 					u.active_ind = 'Y' AND 
 					sst.s_status_type = ii.s_status_type AND 
-					ii.item_id='" . $item_id . "' " . (strlen ( $owner_id ) > 0 ? "AND ii.owner_id = '$owner_id'" : "");
+					ii.item_id='" . db_escape($item_id) . "' " . (strlen ( $owner_id ) > 0 ? "AND ii.owner_id = '" . db_escape($owner_id) . "'" : "");
 	
 	// no need for such a restriction if current user is item admin
 	if (! is_user_granted_permission ( PERM_ITEM_ADMIN )) {
@@ -145,9 +145,9 @@ function fetch_owner_item_cnt($owner_id, $s_item_type = NULL) {
 	$where = "WHERE i.id = ii.item_id AND sst.s_status_type = ii.s_status_type ";
 	
 	if ($s_item_type) {
-		$where .= "AND i.s_item_type='" . $s_item_type . "' ";
+		$where .= "AND i.s_item_type='" . db_escape($s_item_type) . "' ";
 	}
-	$where .= "AND ii.owner_id = '$owner_id' ";
+	$where .= "AND ii.owner_id = '" . db_escape($owner_id) . "' ";
 	
 	// no need for such a restriction if current user is item admin
 	if (! is_user_granted_permission ( PERM_ITEM_ADMIN )) {
@@ -163,7 +163,7 @@ function fetch_owner_item_cnt($owner_id, $s_item_type = NULL) {
 /*
 */
 function fetch_owner_s_status_type_item_cnt($owner_id, $s_status_type) {
-	$query = "SELECT count(ii.item_id) as count " . "FROM item_instance ii, s_status_type sst, item i " . "WHERE i.id = ii.item_id AND sst.s_status_type = ii.s_status_type AND ii.owner_id='" . $owner_id . "' AND ii.s_status_type = '$s_status_type' ";
+	$query = "SELECT count(ii.item_id) as count " . "FROM item_instance ii, s_status_type sst, item i " . "WHERE i.id = ii.item_id AND sst.s_status_type = ii.s_status_type AND ii.owner_id='" . db_escape($owner_id) . "' AND ii.s_status_type = '" . db_escape($s_status_type) . "' ";
 
 	// no need for such a restriction if current user is item admin
 	if (! is_user_granted_permission ( PERM_ITEM_ADMIN )) {
@@ -179,10 +179,10 @@ function fetch_owner_s_status_type_item_cnt($owner_id, $s_status_type) {
 	NOTE: If $s_item_type is specified, only the given s_item_type is counted (otherwise all)
 */
 function fetch_category_item_cnt($category, $s_item_type = NULL) {
-	$query = "SELECT COUNT(DISTINCT ii.item_id) AS count " . "FROM item i, item_instance ii, s_status_type sst, user u, s_attribute_type sat, s_item_attribute_type siat, item_attribute ia " . "WHERE u.user_id = ii.owner_id AND " . "siat.s_item_type = i.s_item_type AND " . "sat.s_attribute_type = siat.s_attribute_type AND " . "sat.s_field_type = 'CATEGORY' AND " . "ia.s_attribute_type = siat.s_attribute_type AND " . "ia.item_id = ii.item_id AND " . "(ia.instance_no = 0 OR ia.instance_no = ii.instance_no) AND " . "ia.order_no = siat.order_no AND " . "u.active_ind = 'Y' AND " . "sst.s_status_type = ii.s_status_type AND " . "i.id = ii.item_id AND " . "ia.lookup_attribute_val = '" . $category . "'";
+	$query = "SELECT COUNT(DISTINCT ii.item_id) AS count " . "FROM item i, item_instance ii, s_status_type sst, user u, s_attribute_type sat, s_item_attribute_type siat, item_attribute ia " . "WHERE u.user_id = ii.owner_id AND " . "siat.s_item_type = i.s_item_type AND " . "sat.s_attribute_type = siat.s_attribute_type AND " . "sat.s_field_type = 'CATEGORY' AND " . "ia.s_attribute_type = siat.s_attribute_type AND " . "ia.item_id = ii.item_id AND " . "(ia.instance_no = 0 OR ia.instance_no = ii.instance_no) AND " . "ia.order_no = siat.order_no AND " . "u.active_ind = 'Y' AND " . "sst.s_status_type = ii.s_status_type AND " . "i.id = ii.item_id AND " . "ia.lookup_attribute_val = '" . db_escape($category) . "'";
 	
 	if ($s_item_type) {
-		$query .= " AND i.s_item_type='" . $s_item_type . "' ";
+		$query .= " AND i.s_item_type='" . db_escape($s_item_type) . "' ";
 	}
 	
 	// no need for such a restriction if current user is item admin
@@ -205,7 +205,7 @@ function fetch_category_item_cnt($category, $s_item_type = NULL) {
 function fetch_owner_item_instance_rs($owner_id) {
 	$query = "SELECT ii.item_id, ii.instance_no, ii.s_status_type, ii.status_comment, ii.borrow_duration, ii.owner_id, i.title, i.s_item_type 
 			FROM item i, item_instance ii 
-			WHERE i.id = ii.item_id AND ii.owner_id='" . $owner_id . "' ";
+			WHERE i.id = ii.item_id AND ii.owner_id='" . db_escape($owner_id) . "' ";
 	
 	$result = db_query ( $query );
 	return db_result_or_false($result);
@@ -240,17 +240,17 @@ function fetch_item_instance_relationship_rs($item_id, $instance_no = NULL, $rel
 		$query .= "ii.item_id = iir.related_item_id AND
 					ii.instance_no = iir.related_instance_no ";
 		
-		$query .= "AND iir.item_id = $item_id ";
+		$query .= "AND iir.item_id = " . db_int($item_id) . " ";
 		if (is_numeric ( $instance_no )) {
-			$query .= "AND iir.instance_no = $instance_no";
+			$query .= "AND iir.instance_no = " . db_int($instance_no);
 		}
 	} else {
 		$query .= "ii.item_id = iir.item_id AND
 					ii.instance_no = iir.instance_no ";
 		
-		$query .= "AND iir.related_item_id = $item_id ";
+		$query .= "AND iir.related_item_id = " . db_int($item_id) . " ";
 		if (is_numeric ( $instance_no )) {
-			$query .= "AND iir.related_instance_no = $instance_no";
+			$query .= "AND iir.related_instance_no = " . db_int($instance_no);
 		}
 	}
 
@@ -350,8 +350,8 @@ function fetch_available_item_parents($HTTP_VARS, $item_r, $filter = null, $incl
 function is_exists_item_instance_relationship($item_id, $instance_no) {
 	$query = "SELECT 'X'
 			FROM item_instance_relationship
-			WHERE item_id = $item_id AND
-				instance_no = $instance_no";
+			WHERE item_id = " . db_int($item_id) . " AND
+				instance_no = " . db_int($instance_no);
 	
 	$result = db_query ( $query );
 	return db_result_has_rows($result);
@@ -368,8 +368,8 @@ function is_exists_item_instance_relationship($item_id, $instance_no) {
 function is_exists_related_item_instance_relationship($item_id, $instance_no, $parent_item_id = NULL, $parent_instance_no = NULL) {
 	$query = "SELECT 'X'
 			FROM item_instance_relationship
-			WHERE related_item_id = $item_id AND
-				related_instance_no = $instance_no";
+			WHERE related_item_id = " . db_int($item_id) . " AND
+				related_instance_no = " . db_int($instance_no);
 	
 	if (is_numeric ( $parent_item_id ) && is_numeric ( $parent_instance_no )) {
 		$query .= " AND item_id = $parent_item_id AND instance_no = $parent_instance_no ";
@@ -386,14 +386,14 @@ function is_exists_related_item_instance_relationship($item_id, $instance_no, $p
 function fetch_item_instance_r($item_id, $instance_no) {
 	$query = "SELECT ii.item_id, ii.instance_no, ii.s_status_type, ii.status_comment, ii.borrow_duration, ii.owner_id, UNIX_TIMESTAMP(ii.update_on) AS update_on, i.title, i.s_item_type 
 			FROM item i, item_instance ii 
-			WHERE i.id = ii.item_id AND i.id ='" . $item_id . "' AND ii.instance_no = '" . $instance_no . "'";
+			WHERE i.id = ii.item_id AND i.id ='" . db_escape($item_id) . "' AND ii.instance_no = '" . db_escape($instance_no) . "'";
 	
 	$result = db_query ( $query );
 	return db_result_single_row($result);
 }
 
 function fetch_item_r($item_id) {
-	$query = "SELECT id as item_id, title, s_item_type FROM item WHERE id = '" . $item_id . "'";
+	$query = "SELECT id as item_id, title, s_item_type FROM item WHERE id = '" . db_escape($item_id) . "'";
 	
 	$result = db_query ( $query );
 	return db_result_single_row($result);
@@ -412,7 +412,7 @@ function fetch_child_item_r($item_id) {
 */
 function fetch_item_title($item_id) {
 	// Only load previous record if edit.
-	$query = "SELECT title FROM item WHERE id = '" . $item_id . "'";
+	$query = "SELECT title FROM item WHERE id = '" . db_escape($item_id) . "'";
 	$result = db_query ( $query );
 	return db_result_single_lookup($result, 'title');
 }
@@ -422,7 +422,7 @@ function fetch_item_title($item_id) {
 //
 function fetch_item_type($item_id) {
 	// Only load previous record if edit.
-	$query = "SELECT s_item_type FROM item WHERE id = '" . $item_id . "'";
+	$query = "SELECT s_item_type FROM item WHERE id = '" . db_escape($item_id) . "'";
 	$result = db_query ( $query );
 	return db_result_single_lookup($result, 's_item_type');
 }
@@ -434,10 +434,10 @@ function fetch_item_type($item_id) {
 		title, s_item_type, owner_id		
 */
 function is_exists_title($title, $s_item_type, $owner_id = NULL) {
-	$query = "SELECT 'x' FROM item i,item_instance ii, s_status_type sst, user u " . "WHERE i.id = ii.item_id AND " . "u.user_id = ii.owner_id AND " . "u.active_ind = 'Y' AND " . "sst.s_status_type = ii.s_status_type AND " . "i.title = '" . addslashes ( $title ) . "' AND " . "i.s_item_type = '" . $s_item_type . "' ";
+	$query = "SELECT 'x' FROM item i,item_instance ii, s_status_type sst, user u " . "WHERE i.id = ii.item_id AND " . "u.user_id = ii.owner_id AND " . "u.active_ind = 'Y' AND " . "sst.s_status_type = ii.s_status_type AND " . "i.title = '" . addslashes ( $title ) . "' AND " . "i.s_item_type = '" . db_escape($s_item_type) . "' ";
 	
 	if (strlen ( $owner_id ) > 0)
-		$query .= " AND ii.owner_id = '" . $owner_id . "'";
+		$query .= " AND ii.owner_id = '" . db_escape($owner_id) . "'";
 		
 		// no need for such a restriction if current user is item admin
 	if (! is_user_granted_permission ( PERM_ITEM_ADMIN )) {
@@ -460,9 +460,9 @@ function is_exists_title($title, $s_item_type, $owner_id = NULL) {
 	item_instance record.
 */
 function is_exists_item_instance($item_id, $instance_no = NULL) {
-	$query = "SELECT 'x' FROM item_instance WHERE item_id = '$item_id' ";
+	$query = "SELECT 'x' FROM item_instance WHERE item_id = '" . db_escape($item_id) . "' ";
 	if ($instance_no)
-		$query .= "AND instance_no = '$instance_no'";
+		$query .= "AND instance_no = '" . db_escape($instance_no) . "'";
 	$query .= " LIMIT 0,1";
 	
 	$result = db_query ( $query );
@@ -470,13 +470,13 @@ function is_exists_item_instance($item_id, $instance_no = NULL) {
 }
 
 function is_exists_item_instance_with_owner($owner_id) {
-	$query = "SELECT 'x' FROM item_instance WHERE owner_id = '$owner_id'";
+	$query = "SELECT 'x' FROM item_instance WHERE owner_id = '" . db_escape($owner_id) . "'";
 	$result = db_query ( $query );
 	return db_result_has_rows($result);
 }
 
 function is_exists_item_instance_with_owner_and_status($item_id, $s_status_type, $owner_id) {
-	$query = "SELECT 'x' FROM item_instance WHERE item_id = '$item_id' AND owner_id = '$owner_id' AND s_status_type = '$s_status_type'";
+	$query = "SELECT 'x' FROM item_instance WHERE item_id = '" . db_escape($item_id) . "' AND owner_id = '" . db_escape($owner_id) . "' AND s_status_type = '" . db_escape($s_status_type) . "'";
 	
 	$result = db_query ( $query );
 	return db_result_has_rows($result);
@@ -488,7 +488,7 @@ function is_exists_item_instance_with_owner_and_status($item_id, $s_status_type,
 function is_exists_item($item_id) {
 	if (!isset($item_id))
 		return FALSE;
-	$query = "SELECT 'x' FROM item WHERE id = '$item_id'";
+	$query = "SELECT 'x' FROM item WHERE id = '" . db_escape($item_id) . "'";
 	
 	$result = db_query ( $query );
 	return db_result_has_rows($result);
@@ -500,7 +500,7 @@ function is_exists_item($item_id) {
 	and insert.
 */
 function fetch_max_instance_no($item_id) {
-	$query = "SELECT MAX(instance_no) as instance_no FROM item_instance WHERE item_id = $item_id";
+	$query = "SELECT MAX(instance_no) as instance_no FROM item_instance WHERE item_id = " . db_int($item_id);
 	
 	$result = db_query ( $query );
 	return db_result_single_lookup($result, 'instance_no');
@@ -1024,9 +1024,9 @@ function from_and_where_clause($HTTP_VARS, $column_display_config_rs = NULL, $qu
 //
 function insert_item($s_item_type, $title) {
 	if (strlen ( $title ) > 0) {
-		$title = addslashes ( replace_newlines ( trim ( strip_tags ( $title ) ) ) );
+		$title =  replace_newlines ( trim ( strip_tags ( $title ) ) ) ;
 		
-		$query = "INSERT INTO item (s_item_type, title)" . " VALUES ('$s_item_type', '$title')";
+		$query = "INSERT INTO item (s_item_type, title)" . " VALUES ('" . db_escape($s_item_type) . "', '" . db_escape($title) . "')";
 		
 		$insert = db_query ( $query );
 		if ($insert && db_affected_rows () > 0) {
@@ -1051,7 +1051,7 @@ function insert_item($s_item_type, $title) {
 
 function update_item($item_id, $title) {
 	if (strlen ( $title ) > 0) {
-		$query = "UPDATE item " . "SET title = '" . addslashes ( replace_newlines ( trim ( strip_tags ( $title ) ) ) ) . "'" . "WHERE id = '$item_id'";
+		$query = "UPDATE item " . "SET title = '" . addslashes ( replace_newlines ( trim ( strip_tags ( $title ) ) ) ) . "'" . "WHERE id = '" . db_escape($item_id) . "'";
 		
 		$update = db_query ( $query );
 		// We should not treat updates that were not actually updated because value did not change as failures.
@@ -1077,7 +1077,7 @@ function update_item($item_id, $title) {
 	This function does not check for any dependencies.
 */
 function delete_item($item_id) {
-	$query = "DELETE FROM item WHERE id='" . $item_id . "'";
+	$query = "DELETE FROM item WHERE id='" . db_escape($item_id) . "'";
 	$delete = db_query ( $query );
 	if ($delete && db_affected_rows () > 0) {
 		opendb_logger ( OPENDB_LOG_INFO, __FILE__, __FUNCTION__, NULL, array (
@@ -1134,7 +1134,7 @@ function validate_item_instance_fields($s_status_type, &$status_comment, &$borro
 			}
 		}
 		
-		$status_comment = addslashes ( substr ( replace_newlines ( trim ( strip_tags ( $status_comment ) ) ), 0, 255 ) );
+		$status_comment =  substr ( replace_newlines ( trim ( strip_tags ( $status_comment ) ) ), 0, 255 ) ;
 		
 		return TRUE;
 	} else {
@@ -1184,7 +1184,7 @@ function insert_item_instance($item_id, $instance_no, $s_status_type, $status_co
 		}
 		
 		//Either the instance_no was specified to begin with, or the LOCK TABLES and fetch_max_instance_no call worked.
-		$query = "INSERT INTO item_instance(item_id, instance_no, owner_id, borrow_duration, s_status_type, status_comment)" . "VALUES ('$item_id','$instance_no','$owner_id'," . (is_numeric ( $borrow_duration ) ? "'$borrow_duration'" : "NULL") . ",UPPER('" . $s_status_type . "'),'$status_comment')";
+		$query = "INSERT INTO item_instance(item_id, instance_no, owner_id, borrow_duration, s_status_type, status_comment)" . "VALUES ('" . db_escape($item_id) . "','" . db_escape($instance_no) . "','" . db_escape($owner_id) . "'," . (is_numeric ( $borrow_duration ) ? "'" . db_escape($borrow_duration) . "'" : "NULL") . ",UPPER('" . db_escape($s_status_type) . "'),'" . db_escape($status_comment) . "')";
 		
 		$insert = db_query ( $query );
 		if ($insert && db_affected_rows () > 0) {
@@ -1240,7 +1240,7 @@ function update_item_instance($item_id, $instance_no, $s_status_type, $status_co
 		if ($status_comment !== FALSE)
 			$query .= "status_comment = '$status_comment', ";
 		
-		$query .= "s_status_type = UPPER('" . $s_status_type . "') " . "WHERE item_id = '$item_id' AND instance_no = '$instance_no'";
+		$query .= "s_status_type = UPPER('" . db_escape($s_status_type) . "') " . "WHERE item_id = '" . db_escape($item_id) . "' AND instance_no = '" . db_escape($instance_no) . "'";
 		
 		$update = db_query ( $query );
 		
@@ -1277,7 +1277,7 @@ function update_item_instance($item_id, $instance_no, $s_status_type, $status_co
 	set to NULL otherwise.
 */
 function update_item_instance_owner($item_id, $instance_no, $old_owner_id, $owner_id) {
-	$query = "UPDATE item_instance SET owner_id = '$owner_id' " . "WHERE item_id = '$item_id' AND instance_no = '$instance_no'";
+	$query = "UPDATE item_instance SET owner_id = '" . db_escape($owner_id) . "' " . "WHERE item_id = '" . db_escape($item_id) . "' AND instance_no = '" . db_escape($instance_no) . "'";
 	
 	$update = db_query ( $query );
 	
@@ -1309,7 +1309,7 @@ function delete_item_instance($item_id, $instance_no) {
     delete_item_instance_relationships ( $item_id, $instance_no );
 	
     if (! is_exists_related_item_instance_relationship ( $item_id, $instance_no )) {
-	$query = "DELETE FROM item_instance WHERE item_id = '" . $item_id . "' AND instance_no = '".$instance_no."'";
+	$query = "DELETE FROM item_instance WHERE item_id = '" . db_escape($item_id) . "' AND instance_no = '".db_escape($instance_no)."'";
 	$delete = db_query ( $query );
 	if (db_affected_rows () > 0) {
 	    opendb_logger ( OPENDB_LOG_ERROR, __FILE__, __FUNCTION__, db_error (), array (
@@ -1376,10 +1376,10 @@ function insert_item_instance_relationship($item_id, $instance_no, $related_item
 }
 
 function delete_item_instance_relationships($item_id, $instance_no = NULL) {
-	$query = "DELETE FROM item_instance WHERE item_id = '" . $item_id . "'";
+	$query = "DELETE FROM item_instance WHERE item_id = '" . db_escape($item_id) . "'";
 	
 	if (is_numeric ( $instance_no )) {
-		$query .= " AND instance_no = '$instance_no'";
+		$query .= " AND instance_no = '" . db_escape($instance_no) . "'";
 	}
 	
 	$delete = db_query ( $query );
@@ -1423,8 +1423,8 @@ function copy_related_item_instance_relationships($item_id, $instance_no) {
 
 function delete_related_item_instance_relationship($item_id, $instance_no, $parent_item_id, $parent_instance_no) {
 	$query = "DELETE FROM item_instance_relationship 
-	    WHERE related_item_id = '" . $item_id . "' AND 
-	    related_instance_no = $instance_no AND
+	    WHERE related_item_id = '" . db_escape($item_id) . "' AND 
+	    related_instance_no = " . db_int($instance_no) . " AND
 	    item_id = $parent_item_id AND
 	    instance_no = $parent_instance_no";
 	

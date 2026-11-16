@@ -23,7 +23,7 @@ include_once("./lib/utils.php");
 include_once("./lib/item_type.php");
 
 function is_exists_item_type_group($s_item_type_group) {
-	$query = "SELECT 'x' FROM s_item_type_group " . "WHERE s_item_type_group = '$s_item_type_group' ";
+	$query = "SELECT 'x' FROM s_item_type_group " . "WHERE s_item_type_group = '" . db_escape($s_item_type_group) . "' ";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -36,10 +36,10 @@ function is_exists_item_type_group($s_item_type_group) {
 }
 
 function is_exists_item_type_group_rltshp($s_item_type_group, $s_item_type = NULL) {
-	$query = "SELECT 'x' FROM s_item_type_group_rltshp " . "WHERE s_item_type_group = '$s_item_type_group' ";
+	$query = "SELECT 'x' FROM s_item_type_group_rltshp " . "WHERE s_item_type_group = '" . db_escape($s_item_type_group) . "' ";
 	
 	if (strlen ( $s_item_type ) > 0) {
-		$query .= " AND s_item_type = '$s_item_type'";
+		$query .= " AND s_item_type = '" . db_escape($s_item_type) . "'";
 	}
 	
 	$result = db_query ( $query );
@@ -76,7 +76,7 @@ function fetch_item_type_group_r($s_item_type_group) {
 				ON stlv.language = '" . get_opendb_site_language () . "' AND
 				stlv.tablename = 's_item_type_group' AND
 				stlv.columnname = 'description' AND
-				stlv.key1 = s_item_type_group " . "WHERE s_item_type_group = '$s_item_type_group'";
+				stlv.key1 = s_item_type_group " . "WHERE s_item_type_group = '" . db_escape($s_item_type_group) . "'";
 		
 		$result = db_query ( $query );
 		if ($result && db_num_rows ( $result ) > 0) {
@@ -91,7 +91,7 @@ function fetch_item_type_group_r($s_item_type_group) {
 }
 
 function fetch_item_type_groups_for_item_type_r($s_item_type) {
-	$query = "SELECT DISTINCT sitg.s_item_type_group " . "FROM s_item_type_group sitg, s_item_type_group_rltshp sitgr " . "WHERE sitg.s_item_type_group = sitgr.s_item_type_group AND " . "sitgr.s_item_type = '" . $s_item_type . "'";
+	$query = "SELECT DISTINCT sitg.s_item_type_group " . "FROM s_item_type_group sitg, s_item_type_group_rltshp sitgr " . "WHERE sitg.s_item_type_group = sitgr.s_item_type_group AND " . "sitgr.s_item_type = '" . db_escape($s_item_type) . "'";
 	
 	$query .= " ORDER BY sitg.s_item_type_group";
 	
@@ -112,10 +112,10 @@ function fetch_item_type_group_rlshp_rs($s_item_type_group = NULL, $s_item_type 
 	$query = "SELECT sitgr.s_item_type_group, sitgr.s_item_type " . "FROM s_item_type_group sitg, s_item_type_group_rltshp sitgr " . "WHERE sitg.s_item_type_group = sitgr.s_item_type_group ";
 	
 	if (strlen ( $s_item_type_group ) > 0)
-		$query .= "AND s_item_type_group = '" . strtoupper ( $s_item_type_group ) . "'";
+		$query .= "AND s_item_type_group = '" . db_escape(strtoupper ( $s_item_type_group )) . "'";
 	
 	if (strlen ( $s_item_type ) > 0)
-		$query .= "AND s_item_type = '" . strtoupper ( $s_item_type ) . "'";
+		$query .= "AND s_item_type = '" . db_escape(strtoupper ( $s_item_type )) . "'";
 	
 	if ($order_by)
 		$query .= " ORDER BY s_item_type_group, s_item_type";
@@ -146,7 +146,7 @@ function fetch_item_types_for_group_rs($s_item_type_group) {
 			ON stlv.language = '" . get_opendb_site_language () . "' AND
 			stlv.tablename = 's_item_type' AND
 			stlv.columnname = 'description' AND
-			stlv.key1 = sit.s_item_type " . "WHERE sit.s_item_type = sitgr.s_item_type AND sitgr.s_item_type_group = '" . $s_item_type_group . "' " . "ORDER BY sit.order_no, sit.s_item_type";
+			stlv.key1 = sit.s_item_type " . "WHERE sit.s_item_type = sitgr.s_item_type AND sitgr.s_item_type_group = '" . db_escape($s_item_type_group) . "' " . "ORDER BY sit.order_no, sit.s_item_type";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {

@@ -339,7 +339,7 @@ function display_edit_table($edit_op, $update_op, $headers, $display_functioname
 	echo get_input_field("blank_rows", NULL, NULL, "value_select(\"1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20\",1)", "N", ifempty($HTTP_VARS['blank_rows'], "5"), FALSE, NULL, "this.form.submit();");
 
 	echo "<input type=\"button\" class=\"button\" value=\"Refresh\" onclick=\"this.form['op'].value='$edit_op'; this.form.submit();\">";
-	echo "<input type=\"button\" class=\"button\" value=\"Update\" onclick=\"this.form['op'].value='$update_op'; this.form.submit();\">";
+	echo "<input type=\"button\" class=\"button\" value=\"Update\" onclick=\"this.form['op'].value='" . db_escape($update_op) . "'; this.form.submit();\">";
 
 	echo "</form>";
 
@@ -352,7 +352,7 @@ function generate_site_plugin_sql($site_type_r) {
 
 	$buffer .= $CRLF . $CRLF . "#" . $CRLF . "# Site Plugin." . $CRLF . "#" . $CRLF;
 
-	$buffer .= $CRLF . "INSERT INTO s_site_plugin ( site_type, classname, title, image, description, external_url, items_per_page, more_info_url ) " . "VALUES ( " . "'" . $site_type_r['site_type'] . "', " . "'" . $site_type_r['classname'] . "', " . "'" . addslashes($site_type_r['title']) . "', "
+	$buffer .= $CRLF . "INSERT INTO s_site_plugin ( site_type, classname, title, image, description, external_url, items_per_page, more_info_url ) " . "VALUES ( " . "'" . db_escape($site_type_r['site_type']) . "', " . "'" . db_escape($site_type_r['classname']) . "', " . "'" . addslashes($site_type_r['title']) . "', "
 			. "'" . addslashes($site_type_r['image']) . "', " . "'" . addslashes($site_type_r['description']) . "', " . "'" . addslashes($site_type_r['external_url']) . "', " . "" . $site_type_r['items_per_page'] . ", " . "'" . addslashes($site_type_r['more_info_url']) . "' );";
 
 	$results = fetch_site_plugin_conf_rs($site_type_r['site_type']);
@@ -360,7 +360,7 @@ function generate_site_plugin_sql($site_type_r) {
 		$buffer .= $CRLF . $CRLF . "#" . $CRLF . "# Site Plugin Configuration" . $CRLF . "#" . $CRLF;
 
 		while ($site_plugin_conf_r = db_fetch_assoc($results)) {
-			$buffer .= $CRLF . "INSERT INTO s_site_plugin_conf ( site_type, name, keyid, description, value ) " . "VALUES ( " . "'" . $site_plugin_conf_r['site_type'] . "', " . "'" . addslashes($site_plugin_conf_r['name']) . "', " . "'" . addslashes($site_plugin_conf_r['keyid']) . "', " . "'"
+			$buffer .= $CRLF . "INSERT INTO s_site_plugin_conf ( site_type, name, keyid, description, value ) " . "VALUES ( " . "'" . db_escape($site_plugin_conf_r['site_type']) . "', " . "'" . addslashes($site_plugin_conf_r['name']) . "', " . "'" . addslashes($site_plugin_conf_r['keyid']) . "', " . "'"
 					. addslashes($site_plugin_conf_r['description']) . "', " . "'" . addslashes($site_plugin_conf_r['value']) . "' );";
 		}
 		db_fetch_assoc($results);
@@ -371,8 +371,8 @@ function generate_site_plugin_sql($site_type_r) {
 		$buffer .= $CRLF . $CRLF . "#" . $CRLF . "# Site Plugin Input Fields" . $CRLF . "#" . $CRLF;
 
 		while ($site_plugin_input_field_r = db_fetch_assoc($results)) {
-			$buffer .= $CRLF . "INSERT INTO s_site_plugin_input_field ( site_type, field, order_no, description, prompt, field_type, default_value, refresh_mask ) " . "VALUES ( " . "'" . $site_plugin_input_field_r['site_type'] . "', " . "'" . $site_plugin_input_field_r['field'] . "', " . ""
-					. $site_plugin_input_field_r['order_no'] . ", " . "'" . addslashes($site_plugin_input_field_r['description']) . "', " . "'" . addslashes($site_plugin_input_field_r['prompt']) . "', " . "'" . $site_plugin_input_field_r['field_type'] . "', " . "'"
+			$buffer .= $CRLF . "INSERT INTO s_site_plugin_input_field ( site_type, field, order_no, description, prompt, field_type, default_value, refresh_mask ) " . "VALUES ( " . "'" . db_escape($site_plugin_input_field_r['site_type']) . "', " . "'" . db_escape($site_plugin_input_field_r['field']) . "', " . ""
+					. $site_plugin_input_field_r['order_no'] . ", " . "'" . addslashes($site_plugin_input_field_r['description']) . "', " . "'" . addslashes($site_plugin_input_field_r['prompt']) . "', " . "'" . db_escape($site_plugin_input_field_r['field_type']) . "', " . "'"
 					. addslashes($site_plugin_input_field_r['default_value']) . "', " . "'" . addslashes($site_plugin_input_field_r['refresh_mask']) . "' );";
 		}
 		db_fetch_assoc($results);
@@ -383,8 +383,8 @@ function generate_site_plugin_sql($site_type_r) {
 		$buffer .= $CRLF . $CRLF . "#" . $CRLF . "# Site Plugin Links" . $CRLF . "#" . $CRLF;
 
 		while ($fetch_site_plugin_link_r = db_fetch_assoc($results)) {
-			$buffer .= $CRLF . "INSERT INTO s_site_plugin_link ( site_type, s_item_type_group, s_item_type, order_no, description, url, title_url ) " . "VALUES ( " . "'" . $fetch_site_plugin_link_r['site_type'] . "', " . "'" . $fetch_site_plugin_link_r['s_item_type_group'] . "', " . "'"
-					. $fetch_site_plugin_link_r['s_item_type'] . "', " . "" . $fetch_site_plugin_link_r['order_no'] . ", " . "'" . addslashes($fetch_site_plugin_link_r['description']) . "', " . "'" . addslashes($fetch_site_plugin_link_r['url']) . "', " . "'"
+			$buffer .= $CRLF . "INSERT INTO s_site_plugin_link ( site_type, s_item_type_group, s_item_type, order_no, description, url, title_url ) " . "VALUES ( " . "'" . db_escape($fetch_site_plugin_link_r['site_type']) . "', " . "'" . db_escape($fetch_site_plugin_link_r['s_item_type_group']) . "', " . "'"
+					. db_escape($fetch_site_plugin_link_r['s_item_type']) . "', " . "" . $fetch_site_plugin_link_r['order_no'] . ", " . "'" . addslashes($fetch_site_plugin_link_r['description']) . "', " . "'" . addslashes($fetch_site_plugin_link_r['url']) . "', " . "'"
 					. addslashes($fetch_site_plugin_link_r['title_url']) . "' );";
 		}
 		db_fetch_assoc($results);
@@ -395,9 +395,9 @@ function generate_site_plugin_sql($site_type_r) {
 		$buffer .= $CRLF . $CRLF . "#" . $CRLF . "# Site Plugin System Attribute Type Map" . $CRLF . "#" . $CRLF;
 
 		while ($site_plugin_s_attribute_type_map_r = db_fetch_assoc($results)) {
-			$buffer .= $CRLF . "INSERT INTO s_site_plugin_s_attribute_type_map ( site_type, s_item_type_group, s_item_type, variable, s_attribute_type, lookup_attribute_val_restrict_ind ) " . "VALUES ( " . "'" . $site_plugin_s_attribute_type_map_r['site_type'] . "', " . "'"
-					. $site_plugin_s_attribute_type_map_r['s_item_type_group'] . "', " . "'" . $site_plugin_s_attribute_type_map_r['s_item_type'] . "', " . "'" . addslashes($site_plugin_s_attribute_type_map_r['variable']) . "', " . "'" . $site_plugin_s_attribute_type_map_r['s_attribute_type']
-					. "', " . "'" . $site_plugin_s_attribute_type_map_r['lookup_attribute_val_restrict_ind'] . "' );";
+			$buffer .= $CRLF . "INSERT INTO s_site_plugin_s_attribute_type_map ( site_type, s_item_type_group, s_item_type, variable, s_attribute_type, lookup_attribute_val_restrict_ind ) " . "VALUES ( " . "'" . db_escape($site_plugin_s_attribute_type_map_r['site_type']) . "', " . "'"
+					. db_escape($site_plugin_s_attribute_type_map_r['s_item_type_group']) . "', " . "'" . db_escape($site_plugin_s_attribute_type_map_r['s_item_type']) . "', " . "'" . addslashes($site_plugin_s_attribute_type_map_r['variable']) . "', " . "'" . db_escape($site_plugin_s_attribute_type_map_r['s_attribute_type'])
+					. "', " . "'" . db_escape($site_plugin_s_attribute_type_map_r['lookup_attribute_val_restrict_ind']) . "' );";
 		}
 		db_fetch_assoc($results);
 	}
@@ -407,8 +407,8 @@ function generate_site_plugin_sql($site_type_r) {
 		$buffer .= $CRLF . $CRLF . "#" . $CRLF . "# Site Plugin System Attribute Type Lookup Map" . $CRLF . "#" . $CRLF;
 
 		while ($site_plugin_s_attribute_type_lookup_map_r = db_fetch_assoc($results)) {
-			$buffer .= $CRLF . "INSERT INTO s_site_plugin_s_attribute_type_lookup_map ( site_type, s_attribute_type, value, lookup_attribute_val ) " . "VALUES ( " . "'" . $site_plugin_s_attribute_type_lookup_map_r['site_type'] . "', " . "'"
-					. $site_plugin_s_attribute_type_lookup_map_r['s_attribute_type'] . "', " . "'" . addslashes($site_plugin_s_attribute_type_lookup_map_r['value']) . "', " . "'" . addslashes($site_plugin_s_attribute_type_lookup_map_r['lookup_attribute_val']) . "' ); ";
+			$buffer .= $CRLF . "INSERT INTO s_site_plugin_s_attribute_type_lookup_map ( site_type, s_attribute_type, value, lookup_attribute_val ) " . "VALUES ( " . "'" . db_escape($site_plugin_s_attribute_type_lookup_map_r['site_type']) . "', " . "'"
+					. db_escape($site_plugin_s_attribute_type_lookup_map_r['s_attribute_type']) . "', " . "'" . addslashes($site_plugin_s_attribute_type_lookup_map_r['value']) . "', " . "'" . addslashes($site_plugin_s_attribute_type_lookup_map_r['lookup_attribute_val']) . "' ); ";
 		}
 		db_fetch_assoc($results);
 	}
@@ -424,9 +424,9 @@ function generate_site_plugin_sql($site_type_r) {
 		while ($site_attribute_type_r = db_fetch_assoc($results)) {
 			$list_of_attribute_types[] = $site_attribute_type_r['s_attribute_type'];
 
-			$attr_inserts .= $CRLF . "INSERT INTO s_attribute_type ( s_attribute_type, description, prompt, input_type, display_type, s_field_type, site_type ) " . "VALUES ( " . "'" . $site_attribute_type_r['s_attribute_type'] . "', " . "'" . addslashes($site_attribute_type_r['description'])
-					. "', " . "'" . addslashes($site_attribute_type_r['prompt']) . "', " . "'" . addslashes($site_attribute_type_r['input_type']) . "', " . "'" . addslashes($site_attribute_type_r['display_type']) . "', " . "'" . $site_attribute_type_r['s_field_type'] . "', " . "'"
-					. $site_attribute_type_r['site_type'] . "' );";
+			$attr_inserts .= $CRLF . "INSERT INTO s_attribute_type ( s_attribute_type, description, prompt, input_type, display_type, s_field_type, site_type ) " . "VALUES ( " . "'" . db_escape($site_attribute_type_r['s_attribute_type']) . "', " . "'" . addslashes($site_attribute_type_r['description'])
+					. "', " . "'" . addslashes($site_attribute_type_r['prompt']) . "', " . "'" . addslashes($site_attribute_type_r['input_type']) . "', " . "'" . addslashes($site_attribute_type_r['display_type']) . "', " . "'" . db_escape($site_attribute_type_r['s_field_type']) . "', " . "'"
+					. db_escape($site_attribute_type_r['site_type']) . "' );";
 
 		}
 		db_fetch_assoc($results);
@@ -439,7 +439,7 @@ function generate_site_plugin_sql($site_type_r) {
 		if ($results) {
 			$buffer .= $CRLF . $CRLF . "#" . $CRLF . "# Site Plugin Item Attribute Type Relationship(s)" . $CRLF . "#" . $CRLF;
 			while ($site_item_attribute_type_r = db_fetch_assoc($results)) {
-				$buffer .= $CRLF . "INSERT INTO s_item_attribute_type ( s_item_type, s_attribute_type, order_no, prompt, compulsory_ind ) " . "VALUES ( " . "'" . $site_item_attribute_type_r['s_item_type'] . "', " . "'" . $site_item_attribute_type_r['s_attribute_type'] . "', " . " "
+				$buffer .= $CRLF . "INSERT INTO s_item_attribute_type ( s_item_type, s_attribute_type, order_no, prompt, compulsory_ind ) " . "VALUES ( " . "'" . db_escape($site_item_attribute_type_r['s_item_type']) . "', " . "'" . db_escape($site_item_attribute_type_r['s_attribute_type']) . "', " . " "
 						. $site_item_attribute_type_r['order_no'] . ", " . "'" . addslashes($site_item_attribute_type_r['prompt']) . "', " . "'" . ifempty($site_item_attribute_type_r['compulsory_ind'], 'N') . "' );";
 			}
 			db_fetch_assoc($results);
@@ -1229,7 +1229,7 @@ if ($HTTP_VARS['op'] == 'list_site_plugins') {
 
 		echo ("</table>");
 
-		echo ("<input type=\"button\" class=\"button\" value=\"Refresh\" onclick=\"document.forms['navigate'].op.value='" . $HTTP_VARS['op'] . "'; document.forms['navigate'].submit();\">"
+		echo ("<input type=\"button\" class=\"button\" value=\"Refresh\" onclick=\"document.forms['navigate'].op.value='" . db_escape($HTTP_VARS['op']) . "'; document.forms['navigate'].submit();\">"
 				. "<input type=\"button\" class=\"button\" value=\"Update\" onclick=\"this.form.op.value='update_site_plugins'; this.form.submit();\">");
 
 		echo ("</form>");

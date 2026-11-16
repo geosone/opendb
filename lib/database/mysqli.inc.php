@@ -124,10 +124,45 @@ function db_query($sql, $link = NULL) {
 	return @mysqli_query($link != NULL ? $link : $_opendb_dblink, $sql);
 }
 
+/**
+ * Escapes a value for use between single quotes in SQL.
+ * Every user supplied value placed in a query must go through this.
+ */
 function db_escape($string, $link = NULL) {
 	global $_opendb_dblink;
 
-	return @mysqli_real_escape_string($link != NULL ? $link : $_opendb_dblink, $string);
+	if ($string === NULL || is_bool($string)) {
+		$string = $string ? '1' : '';
+	} else if (is_array($string)) {
+		$string = '';
+	}
+	$link = $link != NULL ? $link : $_opendb_dblink;
+	if ($link) {
+		return mysqli_real_escape_string($link, (string)$string);
+	}
+	return addslashes((string)$string);
+}
+
+/**
+ * An integer for unquoted numeric positions in SQL (ids, counts, limits).
+ */
+function db_int($value) {
+	return (int)$value;
+}
+
+/**
+ * A column / table name for positions that cannot be quoted (ORDER BY ...).
+ * Only letters, digits, '_' and '.' survive.
+ */
+function db_identifier($name) {
+	return preg_replace('/[^A-Za-z0-9_.]/', '', (string)$name);
+}
+
+/**
+ * ASC or DESC, nothing else.
+ */
+function db_sort_order($order) {
+	return strtoupper(trim((string)$order)) === 'DESC' ? 'DESC' : 'ASC';
 }
 
 function db_affected_rows($link = NULL) {

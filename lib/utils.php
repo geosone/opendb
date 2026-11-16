@@ -314,7 +314,7 @@ function format_sql_in_clause($values_r) {
     foreach ($array_of_values as $value) {
 		if (strlen ( $inclause ) > 0)
 			$inclause .= ', ';
-		$inclause .= "'$value'";
+		$inclause .= "'" . db_escape($value) . "'";
 	}
 	
 	if (strlen ( $inclause ) > 0)

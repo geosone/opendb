@@ -150,7 +150,7 @@ function is_exists_item_attribute_type($s_item_type, $s_attribute_type, $order_n
 	if (strlen($s_attribute_type) > 0) {
 		$where .= " s_attribute_type = '" . $s_attribute_type . "'";
 		if (is_numeric($order_no))
-			$where .= " AND order_no = '$order_no'";
+			$where .= " AND order_no = '" . db_escape($order_no) . "'";
 	}
 
 	// Support check for any instances of the s_attribute_type in the s_item_attribute_type table,
@@ -180,7 +180,7 @@ function is_exists_addr_attribute_type_rltshp($s_address_type, $s_attribute_type
 	if (strlen($s_attribute_type) > 0) {
 		$where .= " s_attribute_type = '" . $s_attribute_type . "'";
 		if (is_numeric($order_no))
-			$where .= " AND order_no = '$order_no'";
+			$where .= " AND order_no = '" . db_escape($order_no) . "'";
 	}
 
 	// Support check for any instances of the s_attribute_type in the s_addr_attribute_type_rltshp table,
@@ -211,7 +211,7 @@ function is_exists_addr_attribute_type_rltshp($s_address_type, $s_attribute_type
 function fetch_user_attribute_type_rs($orderby = "s_attribute_type", $order = "asc") {
 	$query = "SELECT s_attribute_type, description, prompt, input_type, display_type, s_field_type, site_type, lookup_attribute_ind, multi_attribute_ind FROM s_attribute_type " . "WHERE s_attribute_type NOT LIKE 'S\_%'";
 
-	$query .= " ORDER BY $orderby $order";
+	$query .= " ORDER BY " . db_identifier($orderby) . " " . db_sort_order($order);
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -226,7 +226,7 @@ function fetch_user_attribute_type_rs($orderby = "s_attribute_type", $order = "a
 function fetch_attribute_type_rs($orderby = "s_attribute_type", $order = "asc") {
 	$query = "SELECT s_attribute_type, description, prompt, s_field_type, site_type, lookup_attribute_ind, multi_attribute_ind 
 			FROM s_attribute_type
-			ORDER BY $orderby $order";
+			ORDER BY " . db_identifier($orderby) . " " . db_sort_order($order);
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -262,7 +262,7 @@ function fetch_s_attribute_type_r($s_attribute_type) {
 					multi_attribute_ind,
 					view_perm
 			FROM s_attribute_type 
-			WHERE s_attribute_type = '$s_attribute_type'";
+			WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -285,7 +285,7 @@ function is_reserved_s_attribute_type($s_attribute_type) {
 }
 
 function fetch_attribute_type_s_field_type($s_attribute_type) {
-	$query = "SELECT s_field_type FROM s_attribute_type WHERE s_attribute_type = '$s_attribute_type'";
+	$query = "SELECT s_field_type FROM s_attribute_type WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -299,7 +299,7 @@ function fetch_attribute_type_s_field_type($s_attribute_type) {
 }
 
 function fetch_s_attribute_type_lookup_cnt($s_attribute_type) {
-	$query = "SELECT count('x') as count FROM s_attribute_type_lookup WHERE s_attribute_type = '" . $s_attribute_type . "'";
+	$query = "SELECT count('x') as count FROM s_attribute_type_lookup WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -314,7 +314,7 @@ function fetch_s_attribute_type_lookup_cnt($s_attribute_type) {
     Check if record exists.
  */
 function is_exists_s_atribute_type_lookup($s_attribute_type, $value) {
-	$query = "SELECT 'x' FROM s_attribute_type_lookup WHERE s_attribute_type = '" . $s_attribute_type . "' AND value = '$value'";
+	$query = "SELECT 'x' FROM s_attribute_type_lookup WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "' AND value = '" . db_escape($value) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -328,17 +328,17 @@ function is_exists_s_atribute_type_lookup($s_attribute_type, $value) {
 
 function validate_s_attribute_type($s_attribute_type, &$description, &$prompt, &$input_type, &$input_type_arg1, &$input_type_arg2, &$input_type_arg3, &$input_type_arg4, &$input_type_arg5, &$display_type, &$display_type_arg1, &$display_type_arg2, &$display_type_arg3, &$display_type_arg4,
 		&$display_type_arg5, &$s_field_type, &$site_type, &$listing_link_ind, &$file_attribute_ind, &$lookup_attribute_ind, &$multi_attribute_ind, &$view_perm) {
-	$description = addslashes(trim(strip_tags($description)));
-	$prompt = addslashes(trim(strip_tags($prompt)));
+	$description = trim(strip_tags($description));
+	$prompt = trim(strip_tags($prompt));
 
 	if ($display_type !== FALSE) {
 		$display_type = validate_display_type($display_type);
 		if (strlen($display_type) > 0) {
-			$display_type_arg1 = addslashes(trim(strip_tags($display_type_arg1)));
-			$display_type_arg2 = addslashes(trim(strip_tags($display_type_arg2)));
-			$display_type_arg3 = addslashes(trim(strip_tags($display_type_arg3)));
-			$display_type_arg4 = addslashes(trim(strip_tags($display_type_arg4)));
-			$display_type_arg5 = addslashes(trim(strip_tags($display_type_arg5)));
+			$display_type_arg1 = trim(strip_tags($display_type_arg1));
+			$display_type_arg2 = trim(strip_tags($display_type_arg2));
+			$display_type_arg3 = trim(strip_tags($display_type_arg3));
+			$display_type_arg4 = trim(strip_tags($display_type_arg4));
+			$display_type_arg5 = trim(strip_tags($display_type_arg5));
 		} else {
 			$display_type_arg1 = NULL;
 			$display_type_arg2 = NULL;
@@ -351,11 +351,11 @@ function validate_s_attribute_type($s_attribute_type, &$description, &$prompt, &
 	if ($input_type !== FALSE) {
 		$input_type = validate_input_type($input_type);
 		if (strlen($input_type) > 0) {
-			$input_type_arg1 = addslashes(trim(strip_tags($input_type_arg1)));
-			$input_type_arg2 = addslashes(trim(strip_tags($input_type_arg2)));
-			$input_type_arg3 = addslashes(trim(strip_tags($input_type_arg3)));
-			$input_type_arg4 = addslashes(trim(strip_tags($input_type_arg4)));
-			$input_type_arg5 = addslashes(trim(strip_tags($input_type_arg5)));
+			$input_type_arg1 = trim(strip_tags($input_type_arg1));
+			$input_type_arg2 = trim(strip_tags($input_type_arg2));
+			$input_type_arg3 = trim(strip_tags($input_type_arg3));
+			$input_type_arg4 = trim(strip_tags($input_type_arg4));
+			$input_type_arg5 = trim(strip_tags($input_type_arg5));
 		} else {
 			$input_type_arg1 = NULL;
 			$input_type_arg2 = NULL;
@@ -405,7 +405,7 @@ function insert_s_attribute_type($s_attribute_type, $description, $prompt, $inpu
 			$s_field_type, $site_type, $listing_link_ind, $file_attribute_ind, $lookup_attribute_ind, $multi_attribute_ind, $view_perm);
 
 	$query = "INSERT INTO s_attribute_type (s_attribute_type, description, prompt, input_type, input_type_arg1, input_type_arg2, input_type_arg3, input_type_arg4, input_type_arg5, display_type, display_type_arg1, display_type_arg2, display_type_arg3, display_type_arg4, display_type_arg5, s_field_type, site_type, listing_link_ind, file_attribute_ind, lookup_attribute_ind, multi_attribute_ind, view_perm) "
-			. "VALUES ('$s_attribute_type', '$description', '$prompt', '$input_type', '$input_type_arg1', '$input_type_arg2', '$input_type_arg3', '$input_type_arg4', '$input_type_arg5', '$display_type', '$display_type_arg1', '$display_type_arg2', '$display_type_arg3', '$display_type_arg4', '$display_type_arg5', '$s_field_type', '$site_type', '$listing_link_ind', '$file_attribute_ind', '$lookup_attribute_ind', '$multi_attribute_ind', '$view_perm')";
+			. "VALUES ('" . db_escape($s_attribute_type) . "', '" . db_escape($description) . "', '" . db_escape($prompt) . "', '" . db_escape($input_type) . "', '" . db_escape($input_type_arg1) . "', '" . db_escape($input_type_arg2) . "', '" . db_escape($input_type_arg3) . "', '" . db_escape($input_type_arg4) . "', '" . db_escape($input_type_arg5) . "', '" . db_escape($display_type) . "', '" . db_escape($display_type_arg1) . "', '" . db_escape($display_type_arg2) . "', '" . db_escape($display_type_arg3) . "', '" . db_escape($display_type_arg4) . "', '" . db_escape($display_type_arg5) . "', '" . db_escape($s_field_type) . "', '" . db_escape($site_type) . "', '" . db_escape($listing_link_ind) . "', '" . db_escape($file_attribute_ind) . "', '" . db_escape($lookup_attribute_ind) . "', '" . db_escape($multi_attribute_ind) . "', '" . db_escape($view_perm) . "')";
 	$update = db_query($query);
 
 	// We should not treat updates that were not actually updated because value did not change as failures.
@@ -432,13 +432,13 @@ function update_s_attribute_type($s_attribute_type, $description, $prompt, $inpu
 	validate_s_attribute_type($s_attribute_type, $description, $prompt, $input_type, $input_type_arg1, $input_type_arg2, $input_type_arg3, $input_type_arg4, $input_type_arg5, $display_type, $display_type_arg1, $display_type_arg2, $display_type_arg3, $display_type_arg4, $display_type_arg5,
 			$s_field_type, $site_type, $listing_link_ind, $file_attribute_ind, $lookup_attribute_ind, $multi_attribute_ind, $view_perm);
 
-	$query = "UPDATE s_attribute_type " . "SET description = '" . $description . "'" . ", prompt = '" . $prompt . "'" . ($input_type !== FALSE ? ", input_type = '" . $input_type . "'" : "") . ($input_type_arg1 !== FALSE ? ", input_type_arg1 = '" . $input_type_arg1 . "'" : "")
-			. ($input_type_arg2 !== FALSE ? ", input_type_arg2 = '" . $input_type_arg2 . "'" : "") . ($input_type_arg3 !== FALSE ? ", input_type_arg3 = '" . $input_type_arg3 . "'" : "") . ($input_type_arg4 !== FALSE ? ", input_type_arg4 = '" . $input_type_arg4 . "'" : "")
-			. ($input_type_arg5 !== FALSE ? ", input_type_arg5 = '" . $input_type_arg5 . "'" : "") . ($display_type !== FALSE ? ", display_type = '" . $display_type . "'" : "") . ($display_type_arg1 !== FALSE ? ", display_type_arg1 = '" . $display_type_arg1 . "'" : "")
-			. ($display_type_arg2 !== FALSE ? ", display_type_arg2 = '" . $display_type_arg2 . "'" : "") . ($display_type_arg3 !== FALSE ? ", display_type_arg3 = '" . $display_type_arg3 . "'" : "") . ($display_type_arg4 !== FALSE ? ", display_type_arg4 = '" . $display_type_arg4 . "'" : "")
-			. ($display_type_arg5 !== FALSE ? ", display_type_arg5 = '" . $display_type_arg5 . "'" : "") . ($s_field_type !== FALSE ? ", s_field_type = '" . $s_field_type . "'" : "") . ($site_type !== FALSE ? ", site_type = '" . $site_type . "'" : "")
-			. ($listing_link_ind !== FALSE ? ", listing_link_ind = '" . $listing_link_ind . "'" : "") . ($file_attribute_ind !== FALSE ? ", file_attribute_ind = '" . $file_attribute_ind . "'" : "") . ($lookup_attribute_ind !== FALSE ? ", lookup_attribute_ind = '" . $lookup_attribute_ind . "'" : "")
-			. ($multi_attribute_ind !== FALSE ? ", multi_attribute_ind = '" . $multi_attribute_ind . "'" : "") . ($view_perm !== FALSE ? ", view_perm = '" . $view_perm . "'" : "") . " WHERE s_attribute_type = '$s_attribute_type'";
+	$query = "UPDATE s_attribute_type " . "SET description = '" . db_escape($description) . "'" . ", prompt = '" . db_escape($prompt) . "'" . ($input_type !== FALSE ? ", input_type = '" . db_escape($input_type) . "'" : "") . ($input_type_arg1 !== FALSE ? ", input_type_arg1 = '" . db_escape($input_type_arg1) . "'" : "")
+			. ($input_type_arg2 !== FALSE ? ", input_type_arg2 = '" . db_escape($input_type_arg2) . "'" : "") . ($input_type_arg3 !== FALSE ? ", input_type_arg3 = '" . db_escape($input_type_arg3) . "'" : "") . ($input_type_arg4 !== FALSE ? ", input_type_arg4 = '" . db_escape($input_type_arg4) . "'" : "")
+			. ($input_type_arg5 !== FALSE ? ", input_type_arg5 = '" . db_escape($input_type_arg5) . "'" : "") . ($display_type !== FALSE ? ", display_type = '" . db_escape($display_type) . "'" : "") . ($display_type_arg1 !== FALSE ? ", display_type_arg1 = '" . db_escape($display_type_arg1) . "'" : "")
+			. ($display_type_arg2 !== FALSE ? ", display_type_arg2 = '" . db_escape($display_type_arg2) . "'" : "") . ($display_type_arg3 !== FALSE ? ", display_type_arg3 = '" . db_escape($display_type_arg3) . "'" : "") . ($display_type_arg4 !== FALSE ? ", display_type_arg4 = '" . db_escape($display_type_arg4) . "'" : "")
+			. ($display_type_arg5 !== FALSE ? ", display_type_arg5 = '" . db_escape($display_type_arg5) . "'" : "") . ($s_field_type !== FALSE ? ", s_field_type = '" . db_escape($s_field_type) . "'" : "") . ($site_type !== FALSE ? ", site_type = '" . db_escape($site_type) . "'" : "")
+			. ($listing_link_ind !== FALSE ? ", listing_link_ind = '" . db_escape($listing_link_ind) . "'" : "") . ($file_attribute_ind !== FALSE ? ", file_attribute_ind = '" . db_escape($file_attribute_ind) . "'" : "") . ($lookup_attribute_ind !== FALSE ? ", lookup_attribute_ind = '" . db_escape($lookup_attribute_ind) . "'" : "")
+			. ($multi_attribute_ind !== FALSE ? ", multi_attribute_ind = '" . db_escape($multi_attribute_ind) . "'" : "") . ($view_perm !== FALSE ? ", view_perm = '" . db_escape($view_perm) . "'" : "") . " WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 
 	$update = db_query($query);
 
@@ -460,7 +460,7 @@ function update_s_attribute_type($s_attribute_type, $description, $prompt, $inpu
 }
 
 function delete_s_attribute_type($s_attribute_type) {
-	$query = "DELETE FROM s_attribute_type " . "WHERE s_attribute_type = '$s_attribute_type'";
+	$query = "DELETE FROM s_attribute_type " . "WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 
 	$delete = db_query($query);
 
@@ -483,7 +483,7 @@ function delete_s_attribute_type($s_attribute_type) {
     way.
  */
 function insert_s_attribute_type_lookup($s_attribute_type, $value, $display, $img, $checked_ind, $order_no) {
-	$display = addslashes(trim(strip_tags($display)));
+	$display = trim(strip_tags($display));
 
 	// Validate checked_ind
 	if (strcasecmp($checked_ind, "Y") === 0 || strcasecmp($checked_ind, "N") === 0)
@@ -491,7 +491,7 @@ function insert_s_attribute_type_lookup($s_attribute_type, $value, $display, $im
 	else
 		$checked_ind = "";
 
-	$query = "INSERT INTO s_attribute_type_lookup (s_attribute_type, value, display, img, checked_ind, order_no) " . "VALUES ('$s_attribute_type', '" . $value . "', '" . $display . "', '$img', '$checked_ind', " . (is_numeric($order_no) ? "'$order_no'" : "NULL") . ")";
+	$query = "INSERT INTO s_attribute_type_lookup (s_attribute_type, value, display, img, checked_ind, order_no) " . "VALUES ('" . db_escape($s_attribute_type) . "', '" . db_escape($value) . "', '" . db_escape($display) . "', '" . db_escape($img) . "', '" . db_escape($checked_ind) . "', " . (is_numeric($order_no) ? "'" . db_escape($order_no) . "'" : "NULL") . ")";
 	$update = db_query($query);
 
 	// We should not treat updates that were not actually updated because value did not change as failures.
@@ -510,7 +510,7 @@ function insert_s_attribute_type_lookup($s_attribute_type, $value, $display, $im
 /**
  */
 function update_s_attribute_type_lookup($s_attribute_type, $value, $display, $img, $checked_ind, $order_no) {
-	$display = addslashes(trim(strip_tags($display)));
+	$display = trim(strip_tags($display));
 
 	// Validate checked_ind
 	if (strcasecmp($checked_ind, 'Y') === 0 || strcasecmp($checked_ind, 'N') === 0)
@@ -518,7 +518,7 @@ function update_s_attribute_type_lookup($s_attribute_type, $value, $display, $im
 	else
 		$checked_ind = '';
 
-	$query = "UPDATE s_attribute_type_lookup " . "SET display = '" . $display . "', " . "img = '$img', " . "checked_ind = '$checked_ind', " . "order_no = " . (is_numeric($order_no) ? "'$order_no'" : "NULL") . " " . "WHERE s_attribute_type = '$s_attribute_type' AND " . "value = '$value'";
+	$query = "UPDATE s_attribute_type_lookup " . "SET display = '" . db_escape($display) . "', " . "img = '" . db_escape($img) . "', " . "checked_ind = '" . db_escape($checked_ind) . "', " . "order_no = " . (is_numeric($order_no) ? "'" . db_escape($order_no) . "'" : "NULL") . " " . "WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "' AND " . "value = '" . db_escape($value) . "'";
 
 	$update = db_query($query);
 
@@ -539,7 +539,7 @@ function update_s_attribute_type_lookup($s_attribute_type, $value, $display, $im
     Assumes record exists!
  */
 function delete_s_attribute_type_lookup($s_attribute_type, $value) {
-	$query = "DELETE FROM s_attribute_type_lookup " . "WHERE s_attribute_type = '$s_attribute_type' AND " . "value = '$value'";
+	$query = "DELETE FROM s_attribute_type_lookup " . "WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "' AND " . "value = '" . db_escape($value) . "'";
 
 	$delete = db_query($query);
 

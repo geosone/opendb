@@ -125,7 +125,7 @@ function get_group_block_input_field($config_group_item_r, $value) {
 			$buffer .= "<ul class=\"actionButtons\">";
 			$buffer .= "<li><input type=\"button\" class=\"button\" value=\"Edit\" onClick=\"updateSelectedOption(this.form['" . $element_name . "'], '" . $config_group_item_r['prompt'] . "', '" . $config_group_item_r['subtype'] . "');\"></li>";
 			$buffer .= "<li><input type=\"button\" class=\"button\" value=\"Add\" onClick=\"addSelectOption(this.form['" . $element_name . "'], '" . $config_group_item_r['prompt'] . "', '" . $config_group_item_r['subtype'] . "');\"></li>";
-			$buffer .= "<li><input type=\"button\" class=\"button\" value=\"Delete\" onClick=\"removeSelectedOption(this.form['" . $element_name . "']);\"></li>";
+			$buffer .= "<li><input type=\"button\" class=\"button\" value=\"Delete\" onClick=\"removeSelectedOption(this.form['" . db_escape($element_name) . "']);\"></li>";
 			$buffer .= "</ul>";
 
 			break;

@@ -74,7 +74,7 @@ function check_item_type_structure($s_item_type, &$error) {
  * the s_item_type is not deletable.
  */
 function is_s_item_type_deletable($s_item_type) {
-	$query = "SELECT 'x' FROM item i WHERE i.s_item_type='" . $s_item_type . "'";
+	$query = "SELECT 'x' FROM item i WHERE i.s_item_type='" . db_escape($s_item_type) . "'";
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
 		db_free_result($result);
@@ -86,7 +86,7 @@ function is_s_item_type_deletable($s_item_type) {
 }
 
 function is_exists_non_instance_item_attributes($s_item_type, $s_attribute_type, $order_no) {
-	$query = "SELECT 'x' FROM item i, item_attribute ia " . "WHERE i.id = ia.item_id AND i.s_item_type = '$s_item_type' AND " . "ia.s_attribute_type = '$s_attribute_type' AND ia.order_no = '$order_no' AND instance_no = 0 ";
+	$query = "SELECT 'x' FROM item i, item_attribute ia " . "WHERE i.id = ia.item_id AND i.s_item_type = '" . db_escape($s_item_type) . "' AND " . "ia.s_attribute_type = '" . db_escape($s_attribute_type) . "' AND ia.order_no = '" . db_escape($order_no) . "' AND instance_no = 0 ";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -103,7 +103,7 @@ function is_exists_non_instance_item_attributes($s_item_type, $s_attribute_type,
  * and order_no then the s_item_attribute_type record is not deletable.
  */
 function is_s_item_attribute_type_deletable($s_item_type, $s_attribute_type, $order_no) {
-	$query = "SELECT 'x' FROM item i, item_attribute ia " . "WHERE i.id = ia.item_id AND i.s_item_type = '$s_item_type' AND " . "ia.s_attribute_type = '$s_attribute_type' AND ia.order_no = '$order_no'";
+	$query = "SELECT 'x' FROM item i, item_attribute ia " . "WHERE i.id = ia.item_id AND i.s_item_type = '" . db_escape($s_item_type) . "' AND " . "ia.s_attribute_type = '" . db_escape($s_attribute_type) . "' AND ia.order_no = '" . db_escape($order_no) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -116,7 +116,7 @@ function is_s_item_attribute_type_deletable($s_item_type, $s_attribute_type, $or
 }
 
 function is_s_item_attribute_type_with_order_no($s_item_type, $s_attribute_type, $order_no) {
-	$query = "SELECT 'x' FROM s_item_attribute_type siat " . "WHERE siat.s_item_type = '$s_item_type' AND " . "siat.s_attribute_type = '$s_attribute_type' AND " . "siat.order_no = '$order_no'";
+	$query = "SELECT 'x' FROM s_item_attribute_type siat " . "WHERE siat.s_item_type = '" . db_escape($s_item_type) . "' AND " . "siat.s_attribute_type = '" . db_escape($s_attribute_type) . "' AND " . "siat.order_no = '" . db_escape($order_no) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -131,7 +131,7 @@ function is_s_item_attribute_type_with_order_no($s_item_type, $s_attribute_type,
 /**
  */
 function is_exists_item_attribute_type_field_type($s_item_type, $s_field_type) {
-	$query = "SELECT 'x' FROM s_item_attribute_type siat, s_attribute_type sat " . "WHERE siat.s_attribute_type = sat.s_attribute_type AND siat.s_item_type = '$s_item_type' AND sat.s_field_type = '$s_field_type'";
+	$query = "SELECT 'x' FROM s_item_attribute_type siat, s_attribute_type sat " . "WHERE siat.s_attribute_type = sat.s_attribute_type AND siat.s_item_type = '" . db_escape($s_item_type) . "' AND sat.s_field_type = '" . db_escape($s_field_type) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -147,7 +147,7 @@ function is_exists_item_attribute_type_field_type($s_item_type, $s_field_type) {
     Fetch a list of all s_attribute_type's including reserved list.
  */
 function fetch_item_type_s_attribute_type_rs($orderby = "s_attribute_type", $order = "asc") {
-	$query = "SELECT s_attribute_type, s_field_type, description, prompt, input_type, display_type, site_type FROM s_attribute_type " . "WHERE (s_field_type IS NULL OR s_field_type NOT IN ('ADDRESS', 'RATING')) " . "ORDER BY $orderby $order";
+	$query = "SELECT s_attribute_type, s_field_type, description, prompt, input_type, display_type, site_type FROM s_attribute_type " . "WHERE (s_field_type IS NULL OR s_field_type NOT IN ('ADDRESS', 'RATING')) " . "ORDER BY " . db_identifier($orderby) . " " . db_sort_order($order);
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -165,9 +165,9 @@ function fetch_sfieldtype_attribute_type_rs($s_field_type, $orderby = "s_attribu
 	if (is_array($s_field_type))
 		$query .= "WHERE s_field_type IN(" . format_sql_in_clause($s_field_type) . ") ";
 	else
-		$query .= "WHERE s_field_type = '$s_field_type' ";
+		$query .= "WHERE s_field_type = '" . db_escape($s_field_type) . "' ";
 
-	$query .= "ORDER BY $orderby $order";
+	$query .= "ORDER BY " . db_identifier($orderby) . " " . db_sort_order($order);
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -177,7 +177,7 @@ function fetch_sfieldtype_attribute_type_rs($s_field_type, $orderby = "s_attribu
 }
 
 function fetch_s_item_type_rs($orderby = "order_no", $order = "asc") {
-	$query = "SELECT s_item_type, order_no, description, image FROM s_item_type ORDER BY $orderby $order";
+	$query = "SELECT s_item_type, order_no, description, image FROM s_item_type ORDER BY " . db_identifier($orderby) . " " . db_sort_order($order);
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -187,7 +187,7 @@ function fetch_s_item_type_rs($orderby = "order_no", $order = "asc") {
 }
 
 function fetch_s_item_attribute_type_rs($s_item_type) {
-	$query = "SELECT siat.s_attribute_type, siat.order_no, siat.prompt, siat.instance_attribute_ind, siat.compulsory_ind, sat.s_field_type, sat.site_type, siat.rss_ind, siat.printable_ind FROM s_item_attribute_type siat, s_attribute_type sat WHERE siat.s_attribute_type = sat.s_attribute_type AND siat.s_item_type = '$s_item_type' ORDER BY siat.order_no ASC";
+	$query = "SELECT siat.s_attribute_type, siat.order_no, siat.prompt, siat.instance_attribute_ind, siat.compulsory_ind, sat.s_field_type, sat.site_type, siat.rss_ind, siat.printable_ind FROM s_item_attribute_type siat, s_attribute_type sat WHERE siat.s_attribute_type = sat.s_attribute_type AND siat.s_item_type = '" . db_escape($s_item_type) . "' ORDER BY siat.order_no ASC";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -197,7 +197,7 @@ function fetch_s_item_attribute_type_rs($s_item_type) {
 }
 
 function fetch_s_item_type_r($s_item_type) {
-	$query = "SELECT s_item_type, order_no, description, image FROM s_item_type WHERE s_item_type = '$s_item_type'";
+	$query = "SELECT s_item_type, order_no, description, image FROM s_item_type WHERE s_item_type = '" . db_escape($s_item_type) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -215,9 +215,9 @@ function fetch_s_item_type_r($s_item_type) {
  * s_item_attribute_type's which will come later.
  */ 
 function insert_s_item_type($s_item_type, $order_no, $description, $image) {
-	$description = addslashes(trim(strip_tags($description)));
+	$description = trim(strip_tags($description));
 
-	$query = "INSERT INTO s_item_type (s_item_type, order_no, description, image) " . "VALUES ('$s_item_type', " . (is_numeric($order_no) ? "'$order_no'" : "NULL") . ", '$description', '$image')";
+	$query = "INSERT INTO s_item_type (s_item_type, order_no, description, image) " . "VALUES ('" . db_escape($s_item_type) . "', " . (is_numeric($order_no) ? "'" . db_escape($order_no) . "'" : "NULL") . ", '" . db_escape($description) . "', '" . db_escape($image) . "')";
 	$update = db_query($query);
 
 	// We should not treat updates that were not actually updated because value did not change as failures.
@@ -233,9 +233,9 @@ function insert_s_item_type($s_item_type, $order_no, $description, $image) {
 }
 
 function update_s_item_type($s_item_type, $order_no, $description, $image) {
-	$description = addslashes(trim(strip_tags($description)));
+	$description = trim(strip_tags($description));
 
-	$query = "UPDATE s_item_type " . "SET " . ($order_no !== FALSE ? " order_no = " . (is_numeric($order_no) ? "'$order_no', " : "NULL, ") : "") . "description = '$description' " . ", image = '$image' " . "WHERE s_item_type = '$s_item_type'";
+	$query = "UPDATE s_item_type " . "SET " . ($order_no !== FALSE ? " order_no = " . (is_numeric($order_no) ? "'" . db_escape($order_no) . "', " : "NULL, ") : "") . "description = '" . db_escape($description) . "' " . ", image = '" . db_escape($image) . "' " . "WHERE s_item_type = '" . db_escape($s_item_type) . "'";
 
 	$update = db_query($query);
 
@@ -252,7 +252,7 @@ function update_s_item_type($s_item_type, $order_no, $description, $image) {
 }
 
 function delete_s_item_type($s_item_type) {
-	$query = "DELETE FROM s_item_type " . "WHERE s_item_type = '$s_item_type'";
+	$query = "DELETE FROM s_item_type " . "WHERE s_item_type = '" . db_escape($s_item_type) . "'";
 
 	$delete = db_query($query);
 
@@ -269,7 +269,7 @@ function delete_s_item_type($s_item_type) {
 }
 
 function insert_s_item_attribute_type($s_item_type, $s_attribute_type, $order_no, $prompt, $instance_attribute_ind, $compulsory_ind, $rss_ind, $printable_ind) {
-	$prompt = addslashes(trim(strip_tags($prompt)));
+	$prompt = trim(strip_tags($prompt));
 	$s_field_type = strtoupper(trim($s_field_type));
 
 	// Ensure we have a valid instance_attribute_ind value.
@@ -292,8 +292,8 @@ function insert_s_item_attribute_type($s_item_type, $s_attribute_type, $order_no
 	if ($printable_ind != 'Y')
 		$printable_ind = 'N';
 
-	$query = "INSERT INTO s_item_attribute_type (s_item_type, s_attribute_type, order_no, prompt, instance_attribute_ind, compulsory_ind, rss_ind, printable_ind) " . "VALUES ('$s_item_type', '$s_attribute_type', " . (is_numeric($order_no) ? "'$order_no'" : "0")
-			. ", '$prompt', '$instance_attribute_ind', '$compulsory_ind', '$rss_ind', '$printable_ind')";
+	$query = "INSERT INTO s_item_attribute_type (s_item_type, s_attribute_type, order_no, prompt, instance_attribute_ind, compulsory_ind, rss_ind, printable_ind) " . "VALUES ('" . db_escape($s_item_type) . "', '" . db_escape($s_attribute_type) . "', " . (is_numeric($order_no) ? "'" . db_escape($order_no) . "'" : "0")
+			. ", '" . db_escape($prompt) . "', '" . db_escape($instance_attribute_ind) . "', '" . db_escape($compulsory_ind) . "', '" . db_escape($rss_ind) . "', '" . db_escape($printable_ind) . "')";
 	$update = db_query($query);
 
 	// We should not treat updates that were not actually updated because value did not change as failures.
@@ -309,7 +309,7 @@ function insert_s_item_attribute_type($s_item_type, $s_attribute_type, $order_no
 }
 
 function update_s_item_attribute_type_order_no($s_item_type, $s_attribute_type, $old_order_no, $order_no) {
-	$query = "UPDATE s_item_attribute_type " . "SET order_no = '$order_no' " . "WHERE s_item_type = '$s_item_type' AND s_attribute_type = '$s_attribute_type' AND order_no = '$old_order_no'";
+	$query = "UPDATE s_item_attribute_type " . "SET order_no = '" . db_escape($order_no) . "' " . "WHERE s_item_type = '" . db_escape($s_item_type) . "' AND s_attribute_type = '" . db_escape($s_attribute_type) . "' AND order_no = '" . db_escape($old_order_no) . "'";
 
 	$update = db_query($query);
 
@@ -326,7 +326,7 @@ function update_s_item_attribute_type_order_no($s_item_type, $s_attribute_type, 
 }
 
 function update_s_item_attribute_type($s_item_type, $s_attribute_type, $order_no, $prompt, $instance_attribute_ind, $compulsory_ind, $rss_ind, $printable_ind) {
-	$prompt = addslashes(trim(strip_tags($prompt)));
+	$prompt = trim(strip_tags($prompt));
 
 	// Ensure we have a valid instance_attribute_ind value.
 	$instance_attribute_ind = strtoupper(trim($instance_attribute_ind));
@@ -348,8 +348,8 @@ function update_s_item_attribute_type($s_item_type, $s_attribute_type, $order_no
 	if ($printable_ind != 'Y')
 		$printable_ind = 'N';
 
-	$query = "UPDATE s_item_attribute_type " . "SET prompt = '$prompt', " . "instance_attribute_ind = '$instance_attribute_ind', " . "compulsory_ind = '$compulsory_ind', " . "rss_ind = '$rss_ind', " . "printable_ind = '$printable_ind' "
-			. "WHERE s_item_type = '$s_item_type' AND s_attribute_type = '$s_attribute_type' AND order_no = '$order_no'";
+	$query = "UPDATE s_item_attribute_type " . "SET prompt = '" . db_escape($prompt) . "', " . "instance_attribute_ind = '" . db_escape($instance_attribute_ind) . "', " . "compulsory_ind = '" . db_escape($compulsory_ind) . "', " . "rss_ind = '" . db_escape($rss_ind) . "', " . "printable_ind = '" . db_escape($printable_ind) . "' "
+			. "WHERE s_item_type = '" . db_escape($s_item_type) . "' AND s_attribute_type = '" . db_escape($s_attribute_type) . "' AND order_no = '" . db_escape($order_no) . "'";
 
 	$update = db_query($query);
 
@@ -366,14 +366,14 @@ function update_s_item_attribute_type($s_item_type, $s_attribute_type, $order_no
 }
 
 function delete_s_item_attribute_type($s_item_type, $s_attribute_type, $order_no) {
-	$query = "DELETE FROM s_item_attribute_type " . "WHERE s_item_type = '$s_item_type'";
+	$query = "DELETE FROM s_item_attribute_type " . "WHERE s_item_type = '" . db_escape($s_item_type) . "'";
 
 	if (strlen($s_attribute_type) > 0) {
-		$query .= " AND s_attribute_type = '$s_attribute_type'";
+		$query .= " AND s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 	}
 
 	if (is_numeric($order_no)) {
-		$query .= " AND order_no = '$order_no'";
+		$query .= " AND order_no = '" . db_escape($order_no) . "'";
 	}
 
 	$delete = db_query($query);
@@ -393,11 +393,11 @@ function delete_s_item_attribute_type($s_item_type, $s_attribute_type, $order_no
 function delete_item_attribute_order_no($s_item_type, $s_attribute_type, $order_no) {
 	// have to use alias to lock table! -- http://dev.mysql.com/doc/mysql/en/LOCK_TABLES.html
 	if (db_query("LOCK TABLES item AS i WRITE, item_attribute AS ia WRITE, item_attribute WRITE")) {
-		$results = db_query("SELECT DISTINCT ia.item_id " . "FROM item i, item_attribute ia " . "WHERE i.id = ia.item_id AND " . "i.s_item_type = '$s_item_type' AND " . "ia.s_attribute_type = '$s_attribute_type' AND " . "ia.order_no = $order_no");
+		$results = db_query("SELECT DISTINCT ia.item_id " . "FROM item i, item_attribute ia " . "WHERE i.id = ia.item_id AND " . "i.s_item_type = '" . db_escape($s_item_type) . "' AND " . "ia.s_attribute_type = '" . db_escape($s_attribute_type) . "' AND " . "ia.order_no = $order_no");
 
 		if ($results) {
 			while ($item_attribute_r = db_fetch_assoc($results)) {
-				$update = db_query("DELETE FROM item_attribute " . "WHERE item_id = " . $item_attribute_r['item_id'] . " AND s_attribute_type = '$s_attribute_type' AND order_no = '$order_no'");
+				$update = db_query("DELETE FROM item_attribute " . "WHERE item_id = " . $item_attribute_r['item_id'] . " AND s_attribute_type = '" . db_escape($s_attribute_type) . "' AND order_no = '" . db_escape($order_no) . "'");
 
 				// We should not treat updates that were not actually updated because value did not change as failures.
 				$rows_affected = db_affected_rows();

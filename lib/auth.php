@@ -89,7 +89,7 @@ function get_user_granted_permissions_r($user_id) {
 		FROM 	s_role_permission srp,
 		user u
 		WHERE 	u.user_role = srp.role_name AND
-		u.user_id = '$user_id'";
+		u.user_id = '" . db_escape($user_id) . "'";
 	
 	$children = array();
 	
@@ -339,12 +339,12 @@ function mt_rand_str ($l, $c = 'abcdefghijklmnopqrstuvwxyz1234567890') {
 }
 
 function get_remember_me_r($cookie) {
-	$cookie = addslashes($cookie);
+	$cookie = $cookie;
 	
 	$site_r = get_opendb_config_var ('site');
 	$login_timeout = (int) ($site_r['login_timeout'] ?? ($site_r['idle_timeout'] ?? 3600));
 	
-	$query = "SELECT id, user_id, UNIX_TIMESTAMP() AS 'current_time', UNIX_TIMESTAMP(DATE_ADD(created_on, INTERVAL $login_timeout SECOND)) AS expiry_time FROM remember_me WHERE cookie = '$cookie' ";
+	$query = "SELECT id, user_id, UNIX_TIMESTAMP() AS 'current_time', UNIX_TIMESTAMP(DATE_ADD(created_on, INTERVAL $login_timeout SECOND)) AS expiry_time FROM remember_me WHERE cookie = '" . db_escape($cookie) . "' ";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
@@ -359,8 +359,8 @@ function get_remember_me_r($cookie) {
 }
 
 function delete_remember_me($id, $cookie) {
-	$id = addslashes($id);
-	$query = "DELETE FROM remember_me WHERE id = '$id'";
+	$id = $id;
+	$query = "DELETE FROM remember_me WHERE id = '" . db_escape($id) . "'";
 	
 	$delete = db_query ( $query );
 	if (db_affected_rows () > 0) {
@@ -373,8 +373,8 @@ function delete_remember_me($id, $cookie) {
 }
 
 function insert_remember_me($user_id, $cookie) {
-	$cookie = addslashes($cookie);	
-	$query = "INSERT INTO remember_me(user_id, cookie)" . "VALUES ('$user_id', '$cookie')";
+	$cookie = $cookie;	
+	$query = "INSERT INTO remember_me(user_id, cookie)" . "VALUES ('" . db_escape($user_id) . "', '" . db_escape($cookie) . "')";
 	
 	$insert = db_query ( $query );
 	if ($insert && db_affected_rows () > 0) {

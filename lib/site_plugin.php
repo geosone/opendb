@@ -124,7 +124,7 @@ function &get_site_plugin_instance($site_type) {
 * check for record in site_plugin table and class in site/ directory.
 */
 function is_exists_site_plugin($site_type, $check_classname = TRUE) {
-	$query = "SELECT site_type, classname " . "FROM s_site_plugin " . "WHERE site_type = '" . $site_type . "'";
+	$query = "SELECT site_type, classname " . "FROM s_site_plugin " . "WHERE site_type = '" . db_escape($site_type) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -144,7 +144,7 @@ function is_exists_site_plugin($site_type, $check_classname = TRUE) {
 * Returns site_plugin record from table for site_type
 */
 function fetch_site_plugin_r($site_type) {
-    $query = "SELECT site_type, classname, order_no, title, image, description, external_url, items_per_page, more_info_url " . "FROM s_site_plugin " . "WHERE site_type = '" . $site_type . "'";
+    $query = "SELECT site_type, classname, order_no, title, image, description, external_url, items_per_page, more_info_url " . "FROM s_site_plugin " . "WHERE site_type = '" . db_escape($site_type) . "'";
 	
     $result = db_query ( $query );
     if ($result && db_num_rows ( $result ) > 0) {
@@ -157,7 +157,7 @@ function fetch_site_plugin_r($site_type) {
 }
 
 function fetch_site_plugin_classname($site_type) {
-    $query = "SELECT classname FROM s_site_plugin WHERE site_type = '" . $site_type . "'";
+    $query = "SELECT classname FROM s_site_plugin WHERE site_type = '" . db_escape($site_type) . "'";
 	
     $result = db_query ( $query );
     if ($result && db_num_rows ( $result ) > 0) {
@@ -199,7 +199,7 @@ function get_site_plugin_list_r() {
 function fetch_site_attribute_type($site_type) {
 	$query = "SELECT s_attribute_type
 			FROM 	s_attribute_type
-			WHERE 	site_type = '" . $site_type . "'";
+			WHERE 	site_type = '" . db_escape($site_type) . "'";
 	
 	$results = db_query ( $query );
 	if ($results && db_num_rows ( $results ) > 0) {
@@ -283,7 +283,7 @@ function get_site_plugin_conf_r($site_type) {
 }
 
 function fetch_site_plugin_conf_rs($site_type) {
-	$query = "SELECT site_type, name, keyid, description, value " . "FROM s_site_plugin_conf " . "WHERE site_type = '" . $site_type . "' " . "ORDER BY name, keyid";
+	$query = "SELECT site_type, name, keyid, description, value " . "FROM s_site_plugin_conf " . "WHERE site_type = '" . db_escape($site_type) . "' " . "ORDER BY name, keyid";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0)
@@ -296,10 +296,10 @@ function fetch_site_plugin_conf_rs($site_type) {
 * Fetch a set of site plugin links, optionally for a specific s_item_type
 */
 function fetch_site_plugin_link_rs($site_type, $s_item_type = NULL) {
-	$query = "SELECT site_type, sequence_number, s_item_type_group, s_item_type, site_type, description, url, title_url, order_no " . "FROM s_site_plugin_link " . "WHERE site_type = '" . $site_type . "' ";
+	$query = "SELECT site_type, sequence_number, s_item_type_group, s_item_type, site_type, description, url, title_url, order_no " . "FROM s_site_plugin_link " . "WHERE site_type = '" . db_escape($site_type) . "' ";
 	
 	if ($s_item_type != NULL) {
-		$query .= "AND (s_item_type = '*' OR s_item_type = '" . $s_item_type . "') AND ";
+		$query .= "AND (s_item_type = '*' OR s_item_type = '" . db_escape($s_item_type) . "') AND ";
 		
 		$query .= "(s_item_type_group = '*' ";
 		$item_type_group_arr = fetch_item_type_groups_for_item_type_r ( $s_item_type, 'Y' );
@@ -324,7 +324,7 @@ function fetch_site_plugin_input_field_rs($site_type) {
 			stlv.tablename = 's_site_plugin_input_field' AND
 			stlv.columnname = 'prompt' AND
 			stlv.key1 = site_type AND
-			stlv.key2 = field " . "WHERE site_type = '" . $site_type . "' " . "ORDER BY order_no";
+			stlv.key2 = field " . "WHERE site_type = '" . db_escape($site_type) . "' " . "ORDER BY order_no";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0)
@@ -334,7 +334,7 @@ function fetch_site_plugin_input_field_rs($site_type) {
 }
 
 function fetch_site_plugin_s_attribute_type_map_rs($site_type) {
-	$query = "SELECT site_type, sequence_number, s_item_type_group, s_item_type, variable, s_attribute_type, lookup_attribute_val_restrict_ind " . "FROM s_site_plugin_s_attribute_type_map " . "WHERE site_type = '" . $site_type . "' " . "ORDER BY variable, s_attribute_type";
+	$query = "SELECT site_type, sequence_number, s_item_type_group, s_item_type, variable, s_attribute_type, lookup_attribute_val_restrict_ind " . "FROM s_site_plugin_s_attribute_type_map " . "WHERE site_type = '" . db_escape($site_type) . "' " . "ORDER BY variable, s_attribute_type";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0)
@@ -344,10 +344,10 @@ function fetch_site_plugin_s_attribute_type_map_rs($site_type) {
 }
 
 function fetch_site_plugin_s_attribute_type_lookup_map_rs($site_type, $s_attribute_type = NULL) {
-	$query = "SELECT site_type, sequence_number, s_attribute_type, value, lookup_attribute_val " . "FROM s_site_plugin_s_attribute_type_lookup_map " . "WHERE site_type = '" . $site_type . "' ";
+	$query = "SELECT site_type, sequence_number, s_attribute_type, value, lookup_attribute_val " . "FROM s_site_plugin_s_attribute_type_lookup_map " . "WHERE site_type = '" . db_escape($site_type) . "' ";
 	
 	if (strlen ( $s_attribute_type ) > 0) {
-		$query .= " AND s_attribute_type = '" . $s_attribute_type . "' ";
+		$query .= " AND s_attribute_type = '" . db_escape($s_attribute_type) . "' ";
 	}
 	
 	$query .= "ORDER BY s_attribute_type, value, lookup_attribute_val";
@@ -381,7 +381,7 @@ function get_site_plugin_s_attribute_type_lookup_map_r($site_type, $s_attribute_
 }
 
 function fetch_site_plugin_link_r($site_type, $sequence_number) {
-	$query = "SELECT sequence_number, s_item_type_group, s_item_type, site_type, description, url, title_url, order_no " . "FROM s_site_plugin_link " . "WHERE site_type = '" . $site_type . "' AND sequence_number = $sequence_number";
+	$query = "SELECT sequence_number, s_item_type_group, s_item_type, site_type, description, url, title_url, order_no " . "FROM s_site_plugin_link " . "WHERE site_type = '" . db_escape($site_type) . "' AND sequence_number = $sequence_number";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -393,7 +393,7 @@ function fetch_site_plugin_link_r($site_type, $sequence_number) {
 }
 
 function fetch_site_plugin_conf_r($site_type, $name, $keyid) {
-	$query = "SELECT name, keyid, description, value " . "FROM s_site_plugin_conf " . "WHERE site_type = '" . $site_type . "' AND name = '$name' AND keyid = '$keyid'";
+	$query = "SELECT name, keyid, description, value " . "FROM s_site_plugin_conf " . "WHERE site_type = '" . db_escape($site_type) . "' AND name = '" . db_escape($name) . "' AND keyid = '" . db_escape($keyid) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -410,7 +410,7 @@ function fetch_site_plugin_input_field_r($site_type, $field) {
 			stlv.tablename = 's_site_plugin_input_field' AND
 			stlv.columnname = 'prompt' AND
 			stlv.key1 = site_type AND
-			stlv.key2 = field " . "WHERE site_type = '" . $site_type . "' AND field = '$field'";
+			stlv.key2 = field " . "WHERE site_type = '" . db_escape($site_type) . "' AND field = '" . db_escape($field) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -422,7 +422,7 @@ function fetch_site_plugin_input_field_r($site_type, $field) {
 }
 
 function fetch_site_plugin_s_attribute_type_map_r($site_type, $sequence_number) {
-	$query = "SELECT sequence_number, s_item_type_group, s_item_type, variable, s_attribute_type, lookup_attribute_val_restrict_ind " . "FROM s_site_plugin_s_attribute_type_map " . "WHERE site_type = '" . $site_type . "' AND sequence_number = $sequence_number";
+	$query = "SELECT sequence_number, s_item_type_group, s_item_type, variable, s_attribute_type, lookup_attribute_val_restrict_ind " . "FROM s_site_plugin_s_attribute_type_map " . "WHERE site_type = '" . db_escape($site_type) . "' AND sequence_number = $sequence_number";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -434,7 +434,7 @@ function fetch_site_plugin_s_attribute_type_map_r($site_type, $sequence_number) 
 }
 
 function fetch_site_plugin_s_attribute_type_lookup_map_r($site_type, $sequence_number) {
-	$query = "SELECT sequence_number, s_attribute_type, value, lookup_attribute_val " . "FROM s_site_plugin_s_attribute_type_lookup_map " . "WHERE site_type = '" . $site_type . "' AND sequence_number = $sequence_number";
+	$query = "SELECT sequence_number, s_attribute_type, value, lookup_attribute_val " . "FROM s_site_plugin_s_attribute_type_lookup_map " . "WHERE site_type = '" . db_escape($site_type) . "' AND sequence_number = $sequence_number";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -451,9 +451,9 @@ function fetch_site_plugin_s_attribute_type_lookup_map_r($site_type, $sequence_n
 * appropriately.
 */
 function get_expanded_and_mapped_site_plugin_item_variables_r($site_type, $s_item_type, $site_item_attributes_r) {
-	$query = "SELECT variable, s_attribute_type, lookup_attribute_val_restrict_ind " . "FROM s_site_plugin_s_attribute_type_map " . "WHERE site_type = '" . $site_type . "' ";
+	$query = "SELECT variable, s_attribute_type, lookup_attribute_val_restrict_ind " . "FROM s_site_plugin_s_attribute_type_map " . "WHERE site_type = '" . db_escape($site_type) . "' ";
 	
-	$query .= "AND (s_item_type = '*' OR s_item_type = '" . $s_item_type . "') AND ";
+	$query .= "AND (s_item_type = '*' OR s_item_type = '" . db_escape($s_item_type) . "') AND ";
 	
 	$query .= "(s_item_type_group = '*' ";
 	$item_type_group_arr = fetch_item_type_groups_for_item_type_r ( $s_item_type );

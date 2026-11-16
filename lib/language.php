@@ -32,7 +32,7 @@ function get_opendb_site_language() {
 function is_exists_language($language) {
 	$language = strtoupper ( trim ( $language ) );
 	if (strlen ( $language ) > 0) {
-		$query = "SELECT 'x' FROM s_language WHERE language = '$language'";
+		$query = "SELECT 'x' FROM s_language WHERE language = '" . db_escape($language) . "'";
 		
 		$result = db_query ( $query );
 		if ($result && db_num_rows ( $result ) > 0) {
@@ -49,7 +49,7 @@ function is_exists_language_var($language, $varname) {
 	$language = strtoupper ( trim ( $language ) );
 	if (strlen ( $language ) > 0) {
 		$query = "SELECT 'X' FROM s_language_var 
-				WHERE language = '$language' AND varname = '$varname'";
+				WHERE language = '" . db_escape($language) . "' AND varname = '" . db_escape($varname) . "'";
 		
 		$result = db_query ( $query );
 		if ($result && db_num_rows ( $result ) > 0) {
@@ -101,7 +101,7 @@ function fetch_language_rs() {
 }
 
 function fetch_language_r($language) {
-	$query = "SELECT language, description, default_ind FROM s_language WHERE language = '$language'";
+	$query = "SELECT language, description, default_ind FROM s_language WHERE language = '" . db_escape($language) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$record_r = db_fetch_assoc ( $result );
@@ -198,7 +198,7 @@ function get_opendb_table_lang_var($table, $column, $key1, $key2 = NULL, $key3 =
 
 function fetch_opendb_db_lang_var($language, $varname) {
 	$query = "SELECT value FROM s_language_var
-	WHERE language = '$language' AND varname = '$varname'";
+	WHERE language = '" . db_escape($language) . "' AND varname = '" . db_escape($varname) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$record_r = db_fetch_assoc ( $result );
@@ -300,7 +300,7 @@ function is_exists_system_table_language_var($language, $table, $column, $key1, 
 		$tableconf_r = get_system_table_config ( $table );
 		if (is_array ( $tableconf_r ['key'] )) {
 			$query = "SELECT 'X' FROM s_table_language_var 
-						WHERE language = '$language' AND tablename = '$table' AND columnname = '$column' ";
+						WHERE language = '" . db_escape($language) . "' AND tablename = '" . db_escape($table) . "' AND columnname = '" . db_escape($column) . "' ";
 			
 			for($i = 1; $i <= count ( $tableconf_r ['key'] ); $i ++) {
 				$query .= "AND key$i = ";
@@ -331,7 +331,7 @@ function fetch_opendb_table_lang_var($language, $table, $column, $key1, $key2 = 
 			$query = "SELECT IFNULL(value, t.$column) AS value FROM $table t ";
 			
 			$query .= "LEFT OUTER JOIN s_table_language_var stlv ON 
-				stlv.language = '$language' AND stlv.tablename = '$table' AND stlv.columnname = '$column' ";
+				stlv.language = '" . db_escape($language) . "' AND stlv.tablename = '" . db_escape($table) . "' AND stlv.columnname = '" . db_escape($column) . "' ";
 			
 			for($i = 1; $i <= count ( $tableconf_r ['key'] ); $i ++) {
 				$query .= "AND stlv.key$i = t." . $tableconf_r ['key'] [$i - 1];
@@ -353,7 +353,7 @@ function fetch_opendb_table_lang_var($language, $table, $column, $key1, $key2 = 
 			}
 		} else {
 			$query = "SELECT value FROM s_table_language_var 
-					WHERE language = '$language' AND tablename = '$table' AND columnname = '$column' ";
+					WHERE language = '" . db_escape($language) . "' AND tablename = '" . db_escape($table) . "' AND columnname = '" . db_escape($column) . "' ";
 			
 			for($i = 1; $i <= count ( $tableconf_r ['key'] ); $i ++) {
 				$query .= "AND " . $tableconf_r ['key'] [$i - 1] . " = ";

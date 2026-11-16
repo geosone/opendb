@@ -44,7 +44,7 @@ function is_user_permitted_to_receive_email($user_id) {
 }
 
 function is_user_active($uid) {
-	$query = "SELECT active_ind FROM user WHERE user_id = '$uid'";
+	$query = "SELECT active_ind FROM user WHERE user_id = '" . db_escape($uid) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
@@ -62,7 +62,7 @@ function is_user_active($uid) {
 	Is this a new user
 */
 function is_user_not_activated($uid) {
-	$query = "SELECT active_ind FROM user WHERE user_id = '$uid'";
+	$query = "SELECT active_ind FROM user WHERE user_id = '" . db_escape($uid) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
@@ -103,7 +103,7 @@ function is_user_valid($uid) {
 	if (strlen ( $uid ) == 0)
 		return FALSE;
 	
-	$query = "SELECT 'x' FROM user WHERE LOWER(user_id) = '" . strtolower ( $uid ) . "'";
+	$query = "SELECT 'x' FROM user WHERE LOWER(user_id) = '" . db_escape(strtolower ( $uid )) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -121,7 +121,7 @@ function is_user_valid($uid) {
 // It does not check that the uid is valid, too bad if it is not.
 //
 function fetch_user_name($uid) {
-	$query = "SELECT IF(LENGTH(fullname)>0,fullname,user_id) as fullname FROM user WHERE user_id = '$uid'";
+	$query = "SELECT IF(LENGTH(fullname)>0,fullname,user_id) as fullname FROM user WHERE user_id = '" . db_escape($uid) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
@@ -133,7 +133,7 @@ function fetch_user_name($uid) {
 }
 
 function fetch_user_email($uid) {
-	$query = "SELECT email_addr FROM user WHERE user_id = '$uid'";
+	$query = "SELECT email_addr FROM user WHERE user_id = '" . db_escape($uid) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
@@ -146,7 +146,7 @@ function fetch_user_email($uid) {
 
 // returns the user's specified language
 function fetch_user_language($uid) {
-	$query = "SELECT language FROM user WHERE user_id = '$uid'";
+	$query = "SELECT language FROM user WHERE user_id = '" . db_escape($uid) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
@@ -159,7 +159,7 @@ function fetch_user_language($uid) {
 
 // returns the user's specified theme
 function fetch_user_theme($uid) {
-	$query = "SELECT theme FROM user WHERE user_id = '$uid'";
+	$query = "SELECT theme FROM user WHERE user_id = '" . db_escape($uid) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
@@ -174,7 +174,7 @@ function fetch_user_theme($uid) {
 // This returns the location of the user as a string.  Or FALSE if not found.
 // 
 function fetch_user_lastvisit($uid) {
-	$query = "SELECT lastvisit FROM user WHERE user_id = '$uid'";
+	$query = "SELECT lastvisit FROM user WHERE user_id = '" . db_escape($uid) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
@@ -186,10 +186,10 @@ function fetch_user_lastvisit($uid) {
 }
 
 function is_valid_signup_role($role_name) {
-	$role_name = addslashes ( $role_name );
+	$role_name =  $role_name ;
 	
 	$query = "SELECT 'X'
-	FROM s_role WHERE role_name = '$role_name' AND signup_avail_ind = 'Y'";
+	FROM s_role WHERE role_name = '" . db_escape($role_name) . "' AND signup_avail_ind = 'Y'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -202,7 +202,7 @@ function is_valid_signup_role($role_name) {
 }
 
 function fetch_role_r($role_name) {
-	$role_name = addslashes ( $role_name );
+	$role_name =  $role_name ;
 	
 	$query = "SELECT sr.role_name, 
 	IFNULL(stlv.value, sr.description) AS description,
@@ -214,7 +214,7 @@ function fetch_role_r($role_name) {
 	stlv.tablename = 's_role' AND
 	stlv.columnname = 'description' AND
 	stlv.key1 = sr.role_name 
-	WHERE sr.role_name = '$role_name'";
+	WHERE sr.role_name = '" . db_escape($role_name) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -405,7 +405,7 @@ function fetch_user_r($uid) {
 	stlv.columnname = 'description' AND
 	stlv.key1 = sr.role_name
 	WHERE u.user_role = sr.role_name 
-		AND u.user_id = '" . $uid . "'";
+		AND u.user_id = '" . db_escape($uid) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -418,7 +418,7 @@ function fetch_user_r($uid) {
 }
 
 function validate_user_passwd($uid, $pwd) {
-	$query = "SELECT pwd FROM user WHERE user_id = '$uid'";
+	$query = "SELECT pwd FROM user WHERE user_id = '" . db_escape($uid) . "'";
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
 		$found = db_fetch_assoc ( $result );
@@ -433,7 +433,7 @@ function validate_user_passwd($uid, $pwd) {
 }
 
 function deactivate_user($uid) {
-	$query = "UPDATE user SET active_ind = 'N' WHERE user_id = '$uid'";
+	$query = "UPDATE user SET active_ind = 'N' WHERE user_id = '" . db_escape($uid) . "'";
 	$update = db_query ( $query );
 	
 	if ($update && db_affected_rows () > 0) {
@@ -448,7 +448,7 @@ function deactivate_user($uid) {
 }
 
 function activate_user($uid) {
-	$query = "UPDATE user SET active_ind = 'Y' WHERE user_id = '$uid'";
+	$query = "UPDATE user SET active_ind = 'Y' WHERE user_id = '" . db_escape($uid) . "'";
 	$update = db_query ( $query );
 	
 	if ($update && db_affected_rows () > 0) {
@@ -467,7 +467,7 @@ function activate_user($uid) {
 // makes the change.
 //
 function update_user_passwd($uid, $pwd) {
-	$query = "UPDATE user SET pwd = '" . (strlen ( $pwd ) > 0 ? md5 ( $pwd ) : "") . "' WHERE user_id='$uid'";
+	$query = "UPDATE user SET pwd = '" . db_escape((strlen ( $pwd ) > 0 ? md5 ( $pwd ) : "")) . "' WHERE user_id='" . db_escape($uid) . "'";
 	
 	$update = db_query ( $query );
 	// We should not treat updates that were not actually updated because value did not change as failures.
@@ -490,7 +490,7 @@ function update_user_passwd($uid, $pwd) {
 // Will update the last visit value of the specified user.
 //
 function update_user_lastvisit($uid) {
-	$query = "UPDATE user SET lastvisit=now() WHERE user_id = '$uid'";
+	$query = "UPDATE user SET lastvisit=now() WHERE user_id = '" . db_escape($uid) . "'";
 	$update = db_query ( $query );
 	
 	// Any failure to update this one should be treated as that, this includes a lastvisit
@@ -514,7 +514,7 @@ function update_user_lastvisit($uid) {
 		Specify FALSE to not update language.
 */
 function update_user($uid, $fullname, $language, $theme, $email_addr, $user_role) {
-	$query = "UPDATE user SET " . "fullname='" . addslashes ( $fullname ) . "'" . ", email_addr='" . addslashes ( $email_addr ) . "'" . ($language !== FALSE ? ", language='" . addslashes ( $language ) . "'" : "") . ($theme !== FALSE ? ", theme='" . addslashes ( $theme ) . "'" : "") . ($user_role !== FALSE ? ", user_role='" . addslashes ( $user_role ) . "'" : "") . " WHERE user_id = '$uid'";
+	$query = "UPDATE user SET " . "fullname='" . addslashes ( $fullname ) . "'" . ", email_addr='" . addslashes ( $email_addr ) . "'" . ($language !== FALSE ? ", language='" . addslashes ( $language ) . "'" : "") . ($theme !== FALSE ? ", theme='" . addslashes ( $theme ) . "'" : "") . ($user_role !== FALSE ? ", user_role='" . addslashes ( $user_role ) . "'" : "") . " WHERE user_id = '" . db_escape($uid) . "'";
 	
 	$update = db_query ( $query );
 	// We should not treat updates that were not actually updated because value did not change as failures.
@@ -545,7 +545,7 @@ function update_user($uid, $fullname, $language, $theme, $email_addr, $user_role
 // Will do md5($pwd) before inserting...
 //
 function insert_user($uid, $fullname, $pwd, $user_role, $language, $theme, $email_addr, $active_ind = 'Y') {
-	$query = "INSERT INTO user (user_id, fullname, pwd, user_role, email_addr, language, theme, active_ind, lastvisit)" . "VALUES('" . $uid . "'," . "'" . addslashes ( $fullname ) . "'," . (strlen ( $pwd ) > 0 ? ("'" . md5 ( $pwd ) . "'") : "NULL") . "," . "'" . addslashes ( $user_role ) . "'," . "'" . addslashes ( $email_addr ) . "'," . "'" . addslashes ( $language ) . "'," . "'" . addslashes ( $theme ) . "'," . "'" . $active_ind . "'," . "'0000-00-00 00:00:00')";
+	$query = "INSERT INTO user (user_id, fullname, pwd, user_role, email_addr, language, theme, active_ind, lastvisit)" . "VALUES('" . db_escape($uid) . "'," . "'" . addslashes ( $fullname ) . "'," . (strlen ( $pwd ) > 0 ? ("'" . md5 ( $pwd ) . "'") : "NULL") . "," . "'" . addslashes ( $user_role ) . "'," . "'" . addslashes ( $email_addr ) . "'," . "'" . addslashes ( $language ) . "'," . "'" . addslashes ( $theme ) . "'," . "'" . db_escape($active_ind) . "'," . "'0000-00-00 00:00:00')";
 	
 	$insert = db_query ( $query );
 	if ($insert && db_affected_rows () > 0) {
@@ -580,7 +580,7 @@ function insert_user($uid, $fullname, $pwd, $user_role, $language, $theme, $emai
 	TODO - delete user_address and user_address_attributes for this user!
 */
 function delete_user($uid) {
-	$query = "DELETE FROM user WHERE user_id = '$uid'";
+	$query = "DELETE FROM user WHERE user_id = '" . db_escape($uid) . "'";
 	$delete = db_query ( $query );
 	if (db_affected_rows () > 0) {
 		opendb_logger ( OPENDB_LOG_INFO, __FILE__, __FUNCTION__, NULL, array (

@@ -152,22 +152,22 @@ function get_opendb_db_config_var($group, $id = NULL, $keyid = NULL) {
 				$query = "SELECT cgiv.group_id, cgiv.id, scgi.type, cgiv.keyid, cgiv.value " .
 					   "FROM s_config_group_item_var cgiv, s_config_group_item scgi " .
 					   "WHERE cgiv.group_id = scgi.group_id AND cgiv.id = scgi.id AND " .
-					   " cgiv.keyid = scgi.keyid AND " . "cgiv.group_id = '$group' AND " .
-					   " cgiv.id = '$id' AND " . "cgiv.keyid = '$keyid' " .
+					   " cgiv.keyid = scgi.keyid AND " . "cgiv.group_id = '" . db_escape($group) . "' AND " .
+					   " cgiv.id = '" . db_escape($id) . "' AND " . "cgiv.keyid = '" . db_escape($keyid) . "' " .
 					   "LIMIT 0,1";
 			} else if ($id != NULL) {
 				$query = "SELECT cgiv.group_id, cgiv.id, scgi.type, cgiv.keyid, cgiv.value " .
 					   "FROM s_config_group_item_var cgiv, s_config_group_item scgi " .
 					   "WHERE cgiv.group_id = scgi.group_id AND " . "cgiv.id = scgi.id AND " .
 					   " (scgi.type = 'array' OR cgiv.keyid = scgi.keyid) AND " .
-					   " cgiv.group_id = '$group' AND cgiv.id = '$id' " .
+					   " cgiv.group_id = '" . db_escape($group) . "' AND cgiv.id = '" . db_escape($id) . "' " .
 					   "ORDER BY cgiv.keyid";
 			} else {
 				// will need to update these lines if we ever add any more array types.
 				$query = "SELECT cgiv.group_id, cgiv.id, scgi.type, cgiv.keyid, cgiv.value " .
 					   "FROM s_config_group_item_var cgiv, s_config_group_item scgi " .
 					   "WHERE cgiv.group_id = scgi.group_id AND cgiv.id = scgi.id AND " .
-					   " (scgi.type = 'array' OR cgiv.keyid = scgi.keyid) AND " . "cgiv.group_id = '$group' " .
+					   " (scgi.type = 'array' OR cgiv.keyid = scgi.keyid) AND " . "cgiv.group_id = '" . db_escape($group) . "' " .
 					   "ORDER BY cgiv.id, cgiv.keyid";
 			}
 		} else {
@@ -289,7 +289,7 @@ function get_db_config_var($type, $vars_r, $group, $id, $keyid) {
 /**
 */
 function fetch_title_display_mask_rs($stdm_id) {
-	$query = "SELECT stdmi.display_mask, " . "stdmi.s_item_type," . "stdmi.s_item_type_group " . "FROM s_title_display_mask_item stdmi " . "WHERE stdmi.stdm_id = '$stdm_id'";
+	$query = "SELECT stdmi.display_mask, " . "stdmi.s_item_type," . "stdmi.s_item_type_group " . "FROM s_title_display_mask_item stdmi " . "WHERE stdmi.stdm_id = '" . db_escape($stdm_id) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0)

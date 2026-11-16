@@ -40,7 +40,7 @@ function fetch_default_status_type_cnt() {
 }
 
 function is_exists_items_with_status_type($s_status_type) {
-	$query = "SELECT 'x' FROM item_instance WHERE s_status_type = '" . $s_status_type . "'";
+	$query = "SELECT 'x' FROM item_instance WHERE s_status_type = '" . db_escape($s_status_type) . "'";
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
 		db_free_result($result);
@@ -52,7 +52,7 @@ function is_exists_items_with_status_type($s_status_type) {
 }
 
 function is_exists_borrowed_items_for_status_type($s_status_type, $borrowed_items_only = FALSE) {
-	$query = "SELECT 'x' " . "FROM item_instance ii, borrowed_item bi " . "WHERE ii.item_id = bi.item_id AND " . "ii.instance_no = bi.instance_no AND " . "ii.s_status_type = '$s_status_type' ";
+	$query = "SELECT 'x' " . "FROM item_instance ii, borrowed_item bi " . "WHERE ii.item_id = bi.item_id AND " . "ii.instance_no = bi.instance_no AND " . "ii.s_status_type = '" . db_escape($s_status_type) . "' ";
 
 	if ($borrowed_items_only) {
 		$query .= "AND bi.status = 'B'";
@@ -76,7 +76,7 @@ function insert_s_status_type($s_status_type, $description, $img, $delete_ind, $
 		return FALSE;
 	}
 
-	$description = addslashes(trim(strip_tags($description)));
+	$description = trim(strip_tags($description));
 
 	// do this one first, as we need to validate the data for the others based on this one.
 	$change_owner_ind = validate_ind_column($change_owner_ind);
@@ -87,7 +87,7 @@ function insert_s_status_type($s_status_type, $description, $img, $delete_ind, $
 	$hidden_ind = validate_ind_column($hidden_ind);
 
 	$query = "INSERT INTO s_status_type ( s_status_type, description, img, delete_ind, change_owner_ind, borrow_ind, status_comment_ind, default_ind, hidden_ind, closed_ind )"
-			. "VALUES ('$s_status_type', '$description', '$img', '$delete_ind', '$change_owner_ind', '$borrow_ind', '$status_comment_ind', '$hidden_ind', '$default_ind', 'N')";
+			. "VALUES ('" . db_escape($s_status_type) . "', '" . db_escape($description) . "', '" . db_escape($img) . "', '" . db_escape($delete_ind) . "', '" . db_escape($change_owner_ind) . "', '" . db_escape($borrow_ind) . "', '" . db_escape($status_comment_ind) . "', '" . db_escape($hidden_ind) . "', '" . db_escape($default_ind) . "', 'N')";
 
 	$insert = db_query($query);
 	// We should not treat updates that were not actually updated because value did not change as failures.
@@ -107,7 +107,7 @@ function insert_s_status_type($s_status_type, $description, $img, $delete_ind, $
 Clear default indicator for all s_status_types except for current 
  */
 function update_default_status_type($exclude_s_status_type) {
-	$update = db_query("UPDATE s_status_type SET default_ind = 'N' WHERE default_ind = 'Y' AND s_status_type <> '$exclude_s_status_type'");
+	$update = db_query("UPDATE s_status_type SET default_ind = 'N' WHERE default_ind = 'Y' AND s_status_type <> '" . db_escape($exclude_s_status_type) . "'");
 	$rows_affected = db_affected_rows();
 	if ($update && $rows_affected !== -1) {
 		if ($rows_affected > 0) {
@@ -124,7 +124,7 @@ function update_default_status_type($exclude_s_status_type) {
  */
 function update_s_status_type($s_status_type, $description, $img, $delete_ind, $change_owner_ind, $borrow_ind, $status_comment_ind, $hidden_ind, $default_ind, $closed_ind) {
 	$s_status_type = strtoupper($s_status_type);
-	$description = addslashes(trim(strip_tags($description)));
+	$description = trim(strip_tags($description));
 
 	// do this one first, as we need to validate the data for the others based on this one.
 	$change_owner_ind = validate_ind_column($change_owner_ind);
@@ -138,8 +138,8 @@ function update_s_status_type($s_status_type, $description, $img, $delete_ind, $
 	$closed_ind = validate_ind_column($closed_ind);
 	$hidden_ind = validate_ind_column($hidden_ind);
 
-	$query = "UPDATE s_status_type " . "SET description = '$description', " . "img = '$img', " . "delete_ind = '$delete_ind', " . "change_owner_ind = '$change_owner_ind', " . "borrow_ind = '$borrow_ind', " . "status_comment_ind = '$status_comment_ind', " . "default_ind = '$default_ind', "
-			. "closed_ind = '$closed_ind', " . "hidden_ind = '$hidden_ind'" . " WHERE s_status_type = '$s_status_type'";
+	$query = "UPDATE s_status_type " . "SET description = '" . db_escape($description) . "', " . "img = '" . db_escape($img) . "', " . "delete_ind = '" . db_escape($delete_ind) . "', " . "change_owner_ind = '" . db_escape($change_owner_ind) . "', " . "borrow_ind = '" . db_escape($borrow_ind) . "', " . "status_comment_ind = '" . db_escape($status_comment_ind) . "', " . "default_ind = '" . db_escape($default_ind) . "', "
+			. "closed_ind = '" . db_escape($closed_ind) . "', " . "hidden_ind = '" . db_escape($hidden_ind) . "'" . " WHERE s_status_type = '" . db_escape($s_status_type) . "'";
 
 	$update = db_query($query);
 
@@ -164,7 +164,7 @@ function update_s_status_type($s_status_type, $description, $img, $delete_ind, $
 function delete_s_status_type($s_status_type) {
 	$s_status_type = strtoupper($s_status_type);
 
-	$query = "DELETE FROM s_status_type " . "WHERE s_status_type = '$s_status_type'";
+	$query = "DELETE FROM s_status_type " . "WHERE s_status_type = '" . db_escape($s_status_type) . "'";
 
 	$delete = db_query($query);
 

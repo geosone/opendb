@@ -40,7 +40,7 @@ function fetch_s_item_listing_conf_id($s_item_type_group, $s_item_type) {
 	if ($s_item_type == NULL)
 		$s_item_type = '*';
 	
-	$query = "SELECT id FROM s_item_listing_conf WHERE s_item_type_group = '$s_item_type_group' AND s_item_type = '$s_item_type'";
+	$query = "SELECT id FROM s_item_listing_conf WHERE s_item_type_group = '" . db_escape($s_item_type_group) . "' AND s_item_type = '" . db_escape($s_item_type) . "'";
 	
 	$result = db_query ( $query );
 	return db_result_single_lookup($result, 'id');
@@ -51,7 +51,7 @@ function is_exists_s_item_listing_column_conf($silc_id, $s_item_type_group = NUL
 		$silc_id = fetch_s_item_listing_conf_id ( $s_item_type_group, $s_item_type );
 	
 	if (is_numeric ( $silc_id )) {
-		$query = "SELECT 'x' FROM s_item_listing_column_conf WHERE silc_id = $silc_id";
+		$query = "SELECT 'x' FROM s_item_listing_column_conf WHERE silc_id = " . db_int($silc_id);
 		
 		$result = db_query ( $query );
 		return db_result_has_rows($result);

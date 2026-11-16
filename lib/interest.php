@@ -21,7 +21,7 @@ include_once("./lib/database.php");
 include_once("./lib/logging.php");
 
 function fetch_interest_level($item_id, $instance_no, $user_id) {
-	$query = "SELECT level" . " FROM user_item_interest i" . " WHERE i.item_id = $item_id AND i.instance_no = $instance_no AND i.user_id = '$user_id'";
+	$query = "SELECT level" . " FROM user_item_interest i" . " WHERE i.item_id = $item_id AND i.instance_no = $instance_no AND i.user_id = '" . db_escape($user_id) . "'";
 	//    	opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, "query:" . $query);
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -60,12 +60,12 @@ function db_insert_interest_level($item_id, $instance_no, $user_id, $level) {
 function db_update_interest_level($item_id, $instance_no, $user_id, $level) {
 	
 	// 	opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, NULL, array($item_id, $user_id, $level));
-	$query = "UPDATE user_item_interest SET " . "level='" . addslashes ( $level ) . "'" . " WHERE item_id = '$item_id'" . " AND instance_no = '$instance_no'" . " AND user_id = '$user_id'";
+	$query = "UPDATE user_item_interest SET " . "level='" . addslashes ( $level ) . "'" . " WHERE item_id = '" . db_escape($item_id) . "'" . " AND instance_no = '" . db_escape($instance_no) . "'" . " AND user_id = '" . db_escape($user_id) . "'";
 	
 	// If level is 0, we remove the DB entry
 	if ($level == 0) {
-		$query = "DELETE FROM user_item_interest" . " WHERE item_id = '$item_id'" . " AND instance_no = '$instance_no'";
-		" AND user_id = '$user_id'";
+		$query = "DELETE FROM user_item_interest" . " WHERE item_id = '" . db_escape($item_id) . "'" . " AND instance_no = '" . db_escape($instance_no) . "'";
+		" AND user_id = '" . db_escape($user_id) . "'";
 	}
 	
 	$update = db_query ( $query );
@@ -92,7 +92,7 @@ function db_update_interest_level($item_id, $instance_no, $user_id, $level) {
 }
 
 function db_remove_all_interest_level($user_id) {
-	$query = "DELETE FROM user_item_interest" . " WHERE user_id = '$user_id'";
+	$query = "DELETE FROM user_item_interest" . " WHERE user_id = '" . db_escape($user_id) . "'";
 	
 	$update = db_query ( $query );
 	// We should not treat updates that were not actually updated because value did not change as failures.

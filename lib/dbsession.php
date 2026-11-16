@@ -43,7 +43,7 @@ function db_session_close() {
  * Reads the session data from the database
  */
 function db_session_read($SID) {
-	$query = "SELECT value FROM php_session " . " WHERE SID = '$SID' AND " . " expiration > " . time ();
+	$query = "SELECT value FROM php_session " . " WHERE SID = '" . db_escape($SID) . "' AND " . " expiration > " . time ();
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -70,13 +70,13 @@ function db_session_write($SID, $value) {
 	
 	$expiration = time () + get_cfg_var ( 'session.gc_maxlifetime' );
 	
-	$query = "INSERT INTO php_session (SID, expiration, value)" . " VALUES('$SID', '$expiration', '$value')";
+	$query = "INSERT INTO php_session (SID, expiration, value)" . " VALUES('" . db_escape($SID) . "', '" . db_escape($expiration) . "', '" . db_escape($value) . "')";
 	
 	$result = db_query ( $query );
 	if ($result !== FALSE && db_affected_rows () > 0) {
 		return TRUE;
 	} else {	//if (! $result)
-		$query = "UPDATE php_session " . " SET expiration = '$expiration'," . " value = '$value' WHERE " . " SID = '$SID' "; //AND expiration >". time();
+		$query = "UPDATE php_session " . " SET expiration = '" . db_escape($expiration) . "'," . " value = '" . db_escape($value) . "' WHERE " . " SID = '" . db_escape($SID) . "' "; //AND expiration >". time();
 
 		$result = db_query ( $query );
 		if ($result && db_affected_rows () > 0)
@@ -97,7 +97,7 @@ function db_session_destroy($SID) {
 		init_db_connection ();
 	}
 	
-	$query = "DELETE FROM php_session " . " WHERE SID = '$SID'";
+	$query = "DELETE FROM php_session " . " WHERE SID = '" . db_escape($SID) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_affected_rows () > 0)

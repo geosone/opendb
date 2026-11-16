@@ -22,7 +22,7 @@ include_once('./lib/item_type_group.php');
 include_once('./lib/item_type.php');
 
 function is_exists_item_type_item_type_group($s_item_type) {
-	$query = "SELECT 'x' FROM s_item_type_group_rltshp " . "WHERE s_item_type = '$s_item_type' LIMIT 0,1";
+	$query = "SELECT 'x' FROM s_item_type_group_rltshp " . "WHERE s_item_type = '" . db_escape($s_item_type) . "' LIMIT 0,1";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -35,7 +35,7 @@ function is_exists_item_type_item_type_group($s_item_type) {
 }
 
 function fetch_item_type_item_type_group_cnt($s_item_type_group) {
-	$query = "SELECT COUNT('x') AS count FROM s_item_type_group_rltshp " . "WHERE s_item_type_group = '$s_item_type_group'";
+	$query = "SELECT COUNT('x') AS count FROM s_item_type_group_rltshp " . "WHERE s_item_type_group = '" . db_escape($s_item_type_group) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -73,7 +73,7 @@ function fetch_s_item_type_group_rs() {
 function fetch_s_item_type_join_sitgr_rs($s_item_type_group) {
 	$s_item_type_group = strtoupper($s_item_type_group);
 
-	$query = "SELECT sit.s_item_type, IF(sitgr.s_item_type_group IS NULL,'N','Y') AS exists_ind FROM s_item_type sit " . " LEFT JOIN s_item_type_group_rltshp sitgr ON " . "sitgr.s_item_type_group = '$s_item_type_group' AND sitgr.s_item_type = sit.s_item_type " . "ORDER BY sit.s_item_type";
+	$query = "SELECT sit.s_item_type, IF(sitgr.s_item_type_group IS NULL,'N','Y') AS exists_ind FROM s_item_type sit " . " LEFT JOIN s_item_type_group_rltshp sitgr ON " . "sitgr.s_item_type_group = '" . db_escape($s_item_type_group) . "' AND sitgr.s_item_type = sit.s_item_type " . "ORDER BY sit.s_item_type";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -87,9 +87,9 @@ function fetch_s_item_type_join_sitgr_rs($s_item_type_group) {
 function insert_s_item_type_group($s_item_type_group, $description) {
 	if (strlen($s_item_type_group) > 0 && strlen($description) > 0) {
 		$s_item_type_group = strtoupper($s_item_type_group);
-		$description = addslashes(trim(strip_tags($description)));
+		$description = trim(strip_tags($description));
 
-		$query = "INSERT INTO s_item_type_group (s_item_type_group, description) " . "VALUES ('$s_item_type_group', '$description')";
+		$query = "INSERT INTO s_item_type_group (s_item_type_group, description) " . "VALUES ('" . db_escape($s_item_type_group) . "', '" . db_escape($description) . "')";
 
 		$insert = db_query($query);
 		if ($insert && db_affected_rows() > 0) {
@@ -109,7 +109,7 @@ function update_s_item_type_group($s_item_type_group, $description) {
 	if (strlen($s_item_type_group) > 0) {
 		$s_item_type_group = strtoupper($s_item_type_group);
 
-		$query = "UPDATE s_item_type_group " . "SET description = " . ($description !== FALSE ? "'" . addslashes(trim(strip_tags($description))) . "'" : "description") . " WHERE s_item_type_group = '$s_item_type_group'";
+		$query = "UPDATE s_item_type_group " . "SET description = " . ($description !== FALSE ? "'" . addslashes(trim(strip_tags($description))) . "'" : "description") . " WHERE s_item_type_group = '" . db_escape($s_item_type_group) . "'";
 
 		$update = db_query($query);
 
@@ -133,7 +133,7 @@ function delete_s_item_type_group($s_item_type_group) {
 	if (strlen($s_item_type_group) > 0) {
 		$s_item_type_group = strtoupper($s_item_type_group);
 
-		$query = "DELETE FROM s_item_type_group WHERE s_item_type_group = '$s_item_type_group'";
+		$query = "DELETE FROM s_item_type_group WHERE s_item_type_group = '" . db_escape($s_item_type_group) . "'";
 
 		$delete = db_query($query);
 		// We should not treat updates that were not actually updated because value did not change as failures.
@@ -159,7 +159,7 @@ function insert_s_item_type_group_rltshp($s_item_type_group, $s_item_type) {
 		$s_item_type = strtoupper($s_item_type);
 		$s_item_type_group = strtoupper($s_item_type_group);
 
-		$query = "INSERT INTO s_item_type_group_rltshp (s_item_type_group, s_item_type) " . "VALUES ('$s_item_type_group', '$s_item_type')";
+		$query = "INSERT INTO s_item_type_group_rltshp (s_item_type_group, s_item_type) " . "VALUES ('" . db_escape($s_item_type_group) . "', '" . db_escape($s_item_type) . "')";
 
 		$insert = db_query($query);
 		if ($insert && db_affected_rows() > 0) {
@@ -186,7 +186,7 @@ function delete_s_item_type_group_rltshp($s_item_type_group, $s_item_type = NULL
 		if (strlen($s_item_type_group)) {
 			$query .= "s_item_type_group = '$s_item_type_group'";
 			if (strlen($s_item_type) > 0)
-				$query .= " AND s_item_type = '$s_item_type'";
+				$query .= " AND s_item_type = '" . db_escape($s_item_type) . "'";
 		} else {
 			$query .= "s_item_type = '$s_item_type'";
 		}

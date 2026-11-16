@@ -118,7 +118,7 @@ function fetch_opendb_table_column_collations(&$table_collations_r, &$table_colu
 	
 	reset ( $table_r );
 	foreach ( $table_r as $table ) {
-		$query = "SHOW TABLE STATUS LIKE '$table'";
+		$query = "SHOW TABLE STATUS LIKE '" . db_escape($table) . "'";
 		
 		$result = db_query ( $query );
 		if ($result && db_num_rows ( $result ) > 0) {
@@ -852,7 +852,7 @@ function fetch_opendb_release_version($upgrade_steps_complete = TRUE) {
 }
 
 function is_exists_opendb_release_version($release_version) {
-	$query = "SELECT 'X' FROM s_opendb_release WHERE release_version = '$release_version'";
+	$query = "SELECT 'X' FROM s_opendb_release WHERE release_version = '" . db_escape($release_version) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -865,9 +865,9 @@ function is_exists_opendb_release_version($release_version) {
 }
 
 function insert_opendb_release($release_version, $description, $step = '0') {
-	$description = addslashes ( replace_newlines ( trim ( $description ) ) );
+	$description =  replace_newlines ( trim ( $description ) ) ;
 	
-	$query = "INSERT INTO s_opendb_release (release_version, description, upgrade_step)" . "VALUES ('$release_version','$description', " . (is_numeric ( $step ) ? "'$step'" : "NULL") . ")";
+	$query = "INSERT INTO s_opendb_release (release_version, description, upgrade_step)" . "VALUES ('" . db_escape($release_version) . "','" . db_escape($description) . "', " . (is_numeric ( $step ) ? "'" . db_escape($step) . "'" : "NULL") . ")";
 	
 	$insert = db_query ( $query );
 	if ($insert && db_affected_rows () > 0) {
@@ -887,7 +887,7 @@ function insert_opendb_release($release_version, $description, $step = '0') {
 /*
 */
 function update_opendb_release_step($release_version, $step, $step_part = NULL) {
-	$query = "UPDATE s_opendb_release " . "SET upgrade_step = " . (is_numeric ( $step ) ? "'$step'" : "NULL") . " " . ",upgrade_step_part = " . (is_numeric ( $step_part ) ? "'$step_part'" : "NULL") . " " . "WHERE release_version = '$release_version'";
+	$query = "UPDATE s_opendb_release " . "SET upgrade_step = " . (is_numeric ( $step ) ? "'" . db_escape($step) . "'" : "NULL") . " " . ",upgrade_step_part = " . (is_numeric ( $step_part ) ? "'" . db_escape($step_part) . "'" : "NULL") . " " . "WHERE release_version = '" . db_escape($release_version) . "'";
 	
 	$update = db_query ( $query );
 	

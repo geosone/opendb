@@ -23,7 +23,7 @@ include_once("./lib/logging.php");
 function is_exists_file_type($content_type) {
 	$content_type = validate_content_type ( $content_type );
 	if (strlen ( $content_type ) > 0) {
-		$query = "SELECT 'x' FROM s_file_type WHERE content_type = '" . strtolower ( $content_type ) . "'";
+		$query = "SELECT 'x' FROM s_file_type WHERE content_type = '" . db_escape(strtolower ( $content_type )) . "'";
 		$result = db_query ( $query );
 		if ($result && db_num_rows ( $result ) > 0) {
 			db_free_result ( $result );
@@ -36,7 +36,7 @@ function is_exists_file_type($content_type) {
 
 function is_exists_file_type_content_group($content_group) {
 	if (strlen ( $content_group ) > 0) {
-		$query = "SELECT 'x' FROM s_file_type_content_group WHERE content_group = '" . $content_group . "'";
+		$query = "SELECT 'x' FROM s_file_type_content_group WHERE content_group = '" . db_escape($content_group) . "'";
 		$result = db_query ( $query );
 		if ($result && db_num_rows ( $result ) > 0) {
 			db_free_result ( $result );
@@ -52,7 +52,7 @@ function fetch_file_type_for_extension($extension) {
 	if (strlen ( $extension ) > 0) {
 		$query = "SELECT DISTINCT content_type
 		FROM s_file_type_extension
-		WHERE extension = '" . $extension . "'";
+		WHERE extension = '" . db_escape($extension) . "'";
 		
 		$result = db_query ( $query );
 		if ($result && db_num_rows ( $result ) > 0) {
@@ -75,7 +75,7 @@ function fetch_file_type_r($content_type) {
 		s_file_type_extension sfte
 		WHERE sft.content_type = sfte.content_type AND 
 		sfte.default_ind = 'Y' AND 
-		sft.content_type = '" . $content_type . "'";
+		sft.content_type = '" . db_escape($content_type) . "'";
 		
 		$result = db_query ( $query );
 		if ($result && db_num_rows ( $result ) > 0) {

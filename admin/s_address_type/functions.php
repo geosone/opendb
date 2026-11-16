@@ -26,7 +26,7 @@ include_once('./lib/address_type.php');
  * the s_item_type is not deletable.
  */
 function is_s_address_type_deletable($s_address_type) {
-	$query = "SELECT 'x' FROM user_address WHERE s_address_type='" . $s_address_type . "'";
+	$query = "SELECT 'x' FROM user_address WHERE s_address_type='" . db_escape($s_address_type) . "'";
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
 		db_free_result($result);
@@ -42,7 +42,7 @@ function is_s_address_type_deletable($s_address_type) {
  * and order_no then the s_item_attribute_type record is not deletable.
  */
 function is_s_addr_attribute_type_rltshp_deletable($s_address_type, $s_attribute_type, $order_no) {
-	$query = "SELECT 'x' FROM user_address ua, user_address_attribute uaa " . "WHERE ua.sequence_number = uaa.ua_sequence_number AND ua.s_address_type = '$s_address_type' AND " . "uaa.s_attribute_type = '$s_attribute_type' AND uaa.order_no = '$order_no'";
+	$query = "SELECT 'x' FROM user_address ua, user_address_attribute uaa " . "WHERE ua.sequence_number = uaa.ua_sequence_number AND ua.s_address_type = '" . db_escape($s_address_type) . "' AND " . "uaa.s_attribute_type = '" . db_escape($s_attribute_type) . "' AND uaa.order_no = '" . db_escape($order_no) . "'";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
@@ -55,7 +55,7 @@ function is_s_addr_attribute_type_rltshp_deletable($s_address_type, $s_attribute
 }
 
 function fetch_s_addr_attribute_type_rltshp_rs($s_address_type) {
-	$query = "SELECT s_attribute_type, order_no, prompt, closed_ind FROM s_addr_attribute_type_rltshp WHERE s_address_type = '$s_address_type' ORDER BY order_no ASC";
+	$query = "SELECT s_attribute_type, order_no, prompt, closed_ind FROM s_addr_attribute_type_rltshp WHERE s_address_type = '" . db_escape($s_address_type) . "' ORDER BY order_no ASC";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -65,7 +65,7 @@ function fetch_s_addr_attribute_type_rltshp_rs($s_address_type) {
 }
 
 function fetch_s_address_type_rs($orderby = "display_order", $order = "asc") {
-	$query = "SELECT s_address_type, display_order, description, closed_ind FROM s_address_type ORDER BY $orderby $order";
+	$query = "SELECT s_address_type, display_order, description, closed_ind FROM s_address_type ORDER BY " . db_identifier($orderby) . " " . db_sort_order($order);
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -75,7 +75,7 @@ function fetch_s_address_type_rs($orderby = "display_order", $order = "asc") {
 }
 
 function fetch_s_address_type_r($s_address_type) {
-	$query = "SELECT s_address_type, display_order, description, closed_ind FROM s_address_type WHERE s_address_type = '$s_address_type'";
+	$query = "SELECT s_address_type, display_order, description, closed_ind FROM s_address_type WHERE s_address_type = '" . db_escape($s_address_type) . "'";
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0) {
 		$found = db_fetch_assoc($result);
@@ -92,9 +92,9 @@ function fetch_s_address_type_r($s_address_type) {
  * s_item_attribute_type's which will come later.
  */ 
 function insert_s_address_type($s_address_type, $display_order, $description) {
-	$description = addslashes(trim(strip_tags($description)));
+	$description = trim(strip_tags($description));
 
-	$query = "INSERT INTO s_address_type (s_address_type, display_order, description) " . "VALUES ('$s_address_type', " . (is_numeric($display_order) ? "'$display_order'" : "NULL") . ", '$description')";
+	$query = "INSERT INTO s_address_type (s_address_type, display_order, description) " . "VALUES ('" . db_escape($s_address_type) . "', " . (is_numeric($display_order) ? "'" . db_escape($display_order) . "'" : "NULL") . ", '" . db_escape($description) . "')";
 
 	$insert = db_query($query);
 	if ($insert && db_affected_rows() > 0) {
@@ -107,13 +107,13 @@ function insert_s_address_type($s_address_type, $display_order, $description) {
 }
 
 function update_s_address_type($s_address_type, $display_order, $description, $closed_ind) {
-	$description = addslashes(trim(strip_tags($description)));
+	$description = trim(strip_tags($description));
 
 	$closed_ind = strtoupper(trim($closed_ind));
 	if ($closed_ind != 'Y')
 		$closed_ind = 'N';
 
-	$query = "UPDATE s_address_type " . "SET " . ($display_order !== FALSE ? " display_order = " . (is_numeric($display_order) ? "'$display_order', " : "NULL, ") : "") . "description = '$description' " . ", closed_ind = '$closed_ind' " . " WHERE s_address_type = '$s_address_type'";
+	$query = "UPDATE s_address_type " . "SET " . ($display_order !== FALSE ? " display_order = " . (is_numeric($display_order) ? "'" . db_escape($display_order) . "', " : "NULL, ") : "") . "description = '" . db_escape($description) . "' " . ", closed_ind = '" . db_escape($closed_ind) . "' " . " WHERE s_address_type = '" . db_escape($s_address_type) . "'";
 
 	$update = db_query($query);
 
@@ -130,7 +130,7 @@ function update_s_address_type($s_address_type, $display_order, $description, $c
 }
 
 function delete_s_address_type($s_address_type) {
-	$query = "DELETE FROM s_address_type " . "WHERE s_address_type = '$s_address_type'";
+	$query = "DELETE FROM s_address_type " . "WHERE s_address_type = '" . db_escape($s_address_type) . "'";
 
 	$delete = db_query($query);
 
@@ -149,9 +149,9 @@ function delete_s_address_type($s_address_type) {
 /**
  */
 function insert_s_addr_attribute_type_rltshp($s_address_type, $s_attribute_type, $order_no, $prompt, $closed_ind) {
-	$prompt = addslashes(trim(strip_tags($prompt)));
+	$prompt = trim(strip_tags($prompt));
 
-	$query = "INSERT INTO s_addr_attribute_type_rltshp (s_address_type, s_attribute_type, order_no, prompt) " . "VALUES ('$s_address_type', '$s_attribute_type', " . (is_numeric($order_no) ? "'$order_no'" : "0") . ", '$prompt')";
+	$query = "INSERT INTO s_addr_attribute_type_rltshp (s_address_type, s_attribute_type, order_no, prompt) " . "VALUES ('" . db_escape($s_address_type) . "', '" . db_escape($s_attribute_type) . "', " . (is_numeric($order_no) ? "'" . db_escape($order_no) . "'" : "0") . ", '" . db_escape($prompt) . "')";
 	$insert = db_query($query);
 	if ($insert && db_affected_rows() > 0) {
 		opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, NULL, array($s_address_type, $s_attribute_type, $order_no, $prompt, $closed_ind));
@@ -163,13 +163,13 @@ function insert_s_addr_attribute_type_rltshp($s_address_type, $s_attribute_type,
 }
 
 function update_s_addr_attribute_type_rltshp($s_address_type, $s_attribute_type, $order_no, $prompt, $closed_ind) {
-	$prompt = addslashes(trim(strip_tags($prompt)));
+	$prompt = trim(strip_tags($prompt));
 
 	$closed_ind = strtoupper(trim($closed_ind));
 	if ($closed_ind != 'Y')
 		$closed_ind = 'N';
 
-	$query = "UPDATE s_addr_attribute_type_rltshp " . "SET prompt = '$prompt' " . ", closed_ind = '$closed_ind' " . " WHERE s_address_type = '$s_address_type' AND s_attribute_type = '$s_attribute_type' AND order_no = '$order_no'";
+	$query = "UPDATE s_addr_attribute_type_rltshp " . "SET prompt = '" . db_escape($prompt) . "' " . ", closed_ind = '" . db_escape($closed_ind) . "' " . " WHERE s_address_type = '" . db_escape($s_address_type) . "' AND s_attribute_type = '" . db_escape($s_attribute_type) . "' AND order_no = '" . db_escape($order_no) . "'";
 
 	$update = db_query($query);
 
@@ -186,10 +186,10 @@ function update_s_addr_attribute_type_rltshp($s_address_type, $s_attribute_type,
 }
 
 function delete_s_addr_attribute_type_rltshp($s_address_type, $s_attribute_type, $order_no) {
-	$query = "DELETE FROM s_addr_attribute_type_rltshp " . "WHERE s_address_type = '$s_address_type'";
+	$query = "DELETE FROM s_addr_attribute_type_rltshp " . "WHERE s_address_type = '" . db_escape($s_address_type) . "'";
 
 	if (strlen($s_attribute_type) > 0) {
-		$query .= " AND s_attribute_type = '$s_attribute_type' AND order_no = '$order_no'";
+		$query .= " AND s_attribute_type = '" . db_escape($s_attribute_type) . "' AND order_no = '" . db_escape($order_no) . "'";
 	}
 
 	$delete = db_query($query);

@@ -232,13 +232,13 @@ function insert_email($to_user_id, $from_user_id, $from_email_addr, $subject, $m
 	if (strlen ( $from_user_id ) > 0) {
 		$from_email_addr = NULL;
 	} else {
-		$from_email_addr = addslashes ( $from_email_addr );
+		$from_email_addr =  $from_email_addr ;
 	}
 	
-	$subject = addslashes ( trim ( $subject ) );
-	$message = addslashes ( replace_newlines ( trim ( $message ) ) );
+	$subject =  trim ( $subject ) ;
+	$message =  replace_newlines ( trim ( $message ) ) ;
 	
-	$query = "INSERT INTO mailbox (to_user_id,from_user_id,from_email_addr,subject,message)" . "VALUES ('$to_user_id'," . (strlen ( $from_user_id ) > 0 ? "'$from_user_id'" : "NULL") . "," . (strlen ( $from_email_addr ) > 0 ? "'$from_email_addr'" : "NULL") . ", '$subject','$message')";
+	$query = "INSERT INTO mailbox (to_user_id,from_user_id,from_email_addr,subject,message)" . "VALUES ('" . db_escape($to_user_id) . "'," . (strlen ( $from_user_id ) > 0 ? "'" . db_escape($from_user_id) . "'" : "NULL") . "," . (strlen ( $from_email_addr ) > 0 ? "'" . db_escape($from_email_addr) . "'" : "NULL") . ", '" . db_escape($subject) . "','" . db_escape($message) . "')";
 	
 	$insert = db_query ( $query );
 	if ($insert && db_affected_rows () > 0) {

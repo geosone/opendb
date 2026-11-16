@@ -61,12 +61,12 @@ function site_hminfo_install()
 */
 function site_hminfo_insert($id, $dvd_title, $studio, $released, $status, $sound, $versions, $price, $rating, $year, $genre, $aspect, $upc, $dvd_releasedate, $timestamp)
 {
-	$dvd_title = addslashes($dvd_title);
-	$studio = addslashes($studio);
-	$genre = addslashes($genre);
+	$dvd_title = $dvd_title;
+	$studio = $studio;
+	$genre = $genre;
 	
 	$query = "INSERT INTO site_hminfo(id, dvd_title, studio, released, status, sound, versions, price, rating, year, genre, aspect, upc, dvd_releasedate, timestamp) ".
-			"VALUES($id, '$dvd_title', '$studio', ".($released!=NULL?"'$released'":"NULL").", '$status', '$sound', '$versions', '$price', '$rating', '$year', '$genre', '$aspect', '$upc', ".($dvd_releasedate!=NULL?"'$dvd_releasedate'":"NULL").", ".($timestamp!=NULL?"'$timestamp'":"NULL").")";
+			"VALUES($id, '" . db_escape($dvd_title) . "', '" . db_escape($studio) . "', ".($released!=NULL?"'" . db_escape($released) . "'":"NULL").", '" . db_escape($status) . "', '" . db_escape($sound) . "', '" . db_escape($versions) . "', '" . db_escape($price) . "', '" . db_escape($rating) . "', '" . db_escape($year) . "', '" . db_escape($genre) . "', '" . db_escape($aspect) . "', '" . db_escape($upc) . "', ".($dvd_releasedate!=NULL?"'" . db_escape($dvd_releasedate) . "'":"NULL").", ".($timestamp!=NULL?"'" . db_escape($timestamp) . "'":"NULL").")";
 	
 	$insert = db_query($query);
 	if ($insert && db_affected_rows() > 0)
@@ -81,26 +81,26 @@ function site_hminfo_insert($id, $dvd_title, $studio, $released, $status, $sound
 
 function site_hminfo_update($id, $dvd_title, $studio, $released, $status, $sound, $versions, $price, $rating, $year, $genre, $aspect, $upc, $dvd_releasedate, $timestamp)
 {
-	$dvd_title = addslashes($dvd_title);
-	$studio = addslashes($studio);
-	$genre = addslashes($genre);
+	$dvd_title = $dvd_title;
+	$studio = $studio;
+	$genre = $genre;
 	
 	$query = "UPDATE site_hminfo ".
-			"SET dvd_title = '$dvd_title' ".
-			", studio = '$studio' ".
-			($released!=NULL?", released = '$released'":"").
-			", status =  '$status'". 
-			", sound = '$sound'". 
-			", versions = '$versions'". 
-			", price = '$price'". 
-			", rating = '$rating'".
-			", year = '$year'".
-			", genre = '$genre'".
-			", aspect = '$aspect'".
-			($dvd_releasedate!=NULL?", dvd_releasedate = '$dvd_releasedate'":"").
-			($timestamp!=NULL?", timestamp = '$timestamp'":"").
-			", upc = '$upc' ".
-			"WHERE id = $id";
+			"SET dvd_title = '" . db_escape($dvd_title) . "' ".
+			", studio = '" . db_escape($studio) . "' ".
+			($released!=NULL?", released = '" . db_escape($released) . "'":"").
+			", status =  '" . db_escape($status) . "'". 
+			", sound = '" . db_escape($sound) . "'". 
+			", versions = '" . db_escape($versions) . "'". 
+			", price = '" . db_escape($price) . "'". 
+			", rating = '" . db_escape($rating) . "'".
+			", year = '" . db_escape($year) . "'".
+			", genre = '" . db_escape($genre) . "'".
+			", aspect = '" . db_escape($aspect) . "'".
+			($dvd_releasedate!=NULL?", dvd_releasedate = '" . db_escape($dvd_releasedate) . "'":"").
+			($timestamp!=NULL?", timestamp = '" . db_escape($timestamp) . "'":"").
+			", upc = '" . db_escape($upc) . "' ".
+			"WHERE id = " . db_int($id);
 	
 	$update = db_query($query);
 	$rows_affected = db_affected_rows();
@@ -116,7 +116,7 @@ function site_hminfo_update($id, $dvd_title, $studio, $released, $status, $sound
 
 function site_hminfo_delete($id)
 {
-	$query ="DELETE FROM site_hminfo WHERE id = '".$id."'";
+	$query ="DELETE FROM site_hminfo WHERE id = '".db_escape($id)."'";
 	$delete = db_query($query);
 	if($delete && db_affected_rows() > 0)
 	{
@@ -130,7 +130,7 @@ function site_hminfo_delete($id)
 
 function site_hminfo_exists($id)
 {
-	$query = "SELECT 'x' FROM site_hminfo WHERE id = $id";
+	$query = "SELECT 'x' FROM site_hminfo WHERE id = " . db_int($id);
 
 	$result = db_query($query);
 	if($result && db_num_rows($result)>0)

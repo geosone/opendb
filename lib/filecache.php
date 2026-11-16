@@ -409,9 +409,9 @@ function file_cache_open_thumbnail_file($file_cache_r) {
  */
 function fetch_url_file_cache_r($url, $cache_type = 'HTTP', $mode = EXCLUDE_EXPIRED) {
 	// ensure only first 2083 chars are considered.
-	$url = addslashes ( trim ( substr ( $url, 0, 2083 ) ) );
+	$url =  trim ( substr ( $url, 0, 2083 ) ) ;
 	
-	$query = "SELECT sequence_number, upload_file_ind, cache_type, url, location, cache_file, cache_file_thumb, content_type, content_length, UNIX_TIMESTAMP(cache_date) as cache_date, IF(expire_date IS NOT NULL, UNIX_TIMESTAMP(expire_date), NULL) AS expire_date " . "FROM file_cache " . "WHERE cache_type = '$cache_type' AND url = '$url'";
+	$query = "SELECT sequence_number, upload_file_ind, cache_type, url, location, cache_file, cache_file_thumb, content_type, content_length, UNIX_TIMESTAMP(cache_date) as cache_date, IF(expire_date IS NOT NULL, UNIX_TIMESTAMP(expire_date), NULL) AS expire_date " . "FROM file_cache " . "WHERE cache_type = '" . db_escape($cache_type) . "' AND url = '" . db_escape($url) . "'";
 	
 	if ($mode == EXCLUDE_EXPIRED) {
 		$query .= " AND (expire_date IS NULL OR expire_date > NOW())";
@@ -425,7 +425,7 @@ function fetch_url_file_cache_r($url, $cache_type = 'HTTP', $mode = EXCLUDE_EXPI
  * Will include expired files.
  */
 function fetch_file_cache_rs($cache_type = 'HTTP', $order_by = NULL, $sortorder = NULL, $start_index = NULL, $items_per_page = NULL) {
-	$query = "SELECT sequence_number, cache_type, url, location, upload_file_ind, cache_file, cache_file_thumb, content_type, content_length, UNIX_TIMESTAMP(cache_date) as cache_date, IF(expire_date IS NOT NULL, UNIX_TIMESTAMP(expire_date), NULL) AS expire_date, IF(expire_date<=NOW(),'Y','N') as expired_ind " . "FROM file_cache " . "WHERE cache_type = '$cache_type' ";
+	$query = "SELECT sequence_number, cache_type, url, location, upload_file_ind, cache_file, cache_file_thumb, content_type, content_length, UNIX_TIMESTAMP(cache_date) as cache_date, IF(expire_date IS NOT NULL, UNIX_TIMESTAMP(expire_date), NULL) AS expire_date, IF(expire_date<=NOW(),'Y','N') as expired_ind " . "FROM file_cache " . "WHERE cache_type = '" . db_escape($cache_type) . "' ";
 	
 	if (strlen ( $order_by ) > 0) {
 		if (strcasecmp ( $sortorder, 'DESC' ) === 0)
@@ -433,7 +433,7 @@ function fetch_file_cache_rs($cache_type = 'HTTP', $order_by = NULL, $sortorder 
 		else
 			$sortorder = 'ASC';
 		
-		$query .= "ORDER BY $order_by $sortorder";
+		$query .= "ORDER BY " . db_identifier($order_by) . " " . db_sort_order($sortorder);
 	}
 	
 	if (is_numeric ( $start_index ) && is_numeric ( $items_per_page )) {
@@ -448,7 +448,7 @@ function fetch_file_cache_rs($cache_type = 'HTTP', $order_by = NULL, $sortorder 
 }
 
 function fetch_file_cache_cnt($cache_type = 'HTTP') {
-	$query = "SELECT count('X') AS count " . "FROM file_cache " . "WHERE cache_type = '$cache_type' ";
+	$query = "SELECT count('X') AS count " . "FROM file_cache " . "WHERE cache_type = '" . db_escape($cache_type) . "' ";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {
@@ -467,7 +467,7 @@ function fetch_file_cache_cnt($cache_type = 'HTTP') {
 	item in this list will have their cache files refreshed.
 	*/
 function fetch_file_cache_refresh_rs($cache_type = 'HTTP', $limit = NULL) {
-	$query = "SELECT sequence_number, cache_type, url, location, content_type, content_length, UNIX_TIMESTAMP(cache_date) as cache_date " . "FROM file_cache " . "WHERE cache_type = '$cache_type' AND " . "upload_file_ind <> 'Y' AND " . 	// do not refresh uploaded files
+	$query = "SELECT sequence_number, cache_type, url, location, content_type, content_length, UNIX_TIMESTAMP(cache_date) as cache_date " . "FROM file_cache " . "WHERE cache_type = '" . db_escape($cache_type) . "' AND " . "upload_file_ind <> 'Y' AND " . 	// do not refresh uploaded files
 			" (expire_date IS NOT NULL AND expire_date <= NOW())";
 	
 	if (is_numeric ( $limit ))
@@ -481,7 +481,7 @@ function fetch_file_cache_refresh_rs($cache_type = 'HTTP', $limit = NULL) {
 }
 
 function fetch_file_cache_refresh_cnt($cache_type = 'HTTP') {
-	$query = "SELECT count('X') AS count " . "FROM file_cache " . "WHERE cache_type = '$cache_type' AND " . "upload_file_ind <> 'Y' AND " . 	// do not refresh uploaded files
+	$query = "SELECT count('X') AS count " . "FROM file_cache " . "WHERE cache_type = '" . db_escape($cache_type) . "' AND " . "upload_file_ind <> 'Y' AND " . 	// do not refresh uploaded files
 			" (expire_date IS NOT NULL AND expire_date <= NOW())";
 	
 	$result = db_query ( $query );
@@ -607,7 +607,7 @@ function fetch_file_cache_new_item_attribute_cnt() {
  */
 function fetch_file_cache_r($sequence_number) {
 	if (is_numeric ( $sequence_number )) {
-		$query = "SELECT sequence_number, url, upload_file_ind, location, content_type, cache_type, content_length, UNIX_TIMESTAMP(cache_date) as cache_date, IF(expire_date IS NOT NULL, UNIX_TIMESTAMP(expire_date), NULL) AS expire_date, cache_file, cache_file_thumb " . "FROM file_cache " . "WHERE sequence_number = '$sequence_number' AND LENGTH(cache_file) > 0 "; // ignore records where cache_file reference is empty.
+		$query = "SELECT sequence_number, url, upload_file_ind, location, content_type, cache_type, content_length, UNIX_TIMESTAMP(cache_date) as cache_date, IF(expire_date IS NOT NULL, UNIX_TIMESTAMP(expire_date), NULL) AS expire_date, cache_file, cache_file_thumb " . "FROM file_cache " . "WHERE sequence_number = '" . db_escape($sequence_number) . "' AND LENGTH(cache_file) > 0 "; // ignore records where cache_file reference is empty.
 		
 
 		$result = db_query ( $query );
@@ -801,12 +801,12 @@ function insert_file_cache($cache_type, $file_upload_ind, $url, $location, $cont
 	if (strcasecmp ( $url, $location ) === 0)
 		$location = NULL;
 	
-	$url = addslashes ( trim ( substr ( $url, 0, 2083 ) ) );
+	$url =  trim ( substr ( $url, 0, 2083 ) ) ;
 	
 	if ($location != NULL)
-		$location = addslashes ( trim ( substr ( $location, 0, 2083 ) ) );
+		$location =  trim ( substr ( $location, 0, 2083 ) ) ;
 	
-	$query = "INSERT INTO file_cache (cache_type, upload_file_ind, url, location, content_type, cache_date)" . " VALUES ('$cache_type', '$file_upload_ind', '$url', " . (strlen ( $location ) > 0 ? "'$location'" : "NULL") . ", '$content_type', NOW())";
+	$query = "INSERT INTO file_cache (cache_type, upload_file_ind, url, location, content_type, cache_date)" . " VALUES ('" . db_escape($cache_type) . "', '" . db_escape($file_upload_ind) . "', '" . db_escape($url) . "', " . (strlen ( $location ) > 0 ? "'" . db_escape($location) . "'" : "NULL") . ", '" . db_escape($content_type) . "', NOW())";
 	
 	$insert = db_query ( $query );
 	if ($insert && db_affected_rows () > 0) {
@@ -831,7 +831,7 @@ function insert_file_cache($cache_type, $file_upload_ind, $url, $location, $cont
 
 function update_file_cache($sequence_number, $content_length, $expire_date, $cache_file, $cache_file_thumb) {
 	if (is_numeric ( $sequence_number )) {
-		$query = "UPDATE file_cache " . "SET content_length = $content_length, " . "cache_date = NOW(), " . "expire_date = " . ($expire_date != NULL ? $expire_date : "NULL") . ", " . "cache_file = '$cache_file', " . "cache_file_thumb = " . ($cache_file_thumb != NULL ? "'$cache_file_thumb'" : "NULL") . " " . "WHERE sequence_number = $sequence_number ";
+		$query = "UPDATE file_cache " . "SET content_length = $content_length, " . "cache_date = NOW(), " . "expire_date = " . ($expire_date != NULL ? $expire_date : "NULL") . ", " . "cache_file = '" . db_escape($cache_file) . "', " . "cache_file_thumb = " . ($cache_file_thumb != NULL ? "'" . db_escape($cache_file_thumb) . "'" : "NULL") . " " . "WHERE sequence_number = " . db_int($sequence_number) . " ";
 		
 		$update = db_query ( $query );
 		$rows_affected = db_affected_rows ();
@@ -868,7 +868,7 @@ function delete_file_cache($file_cache_r) {
 		delete_file ( $thumbnail_filename );
 	}
 	
-	$query = "DELETE FROM file_cache WHERE sequence_number = " . $file_cache_r ['sequence_number'];
+	$query = "DELETE FROM file_cache WHERE sequence_number = " . db_int($file_cache_r ['sequence_number']);
 	
 	$delete = db_query ( $query );
 	if ($delete) {	// Even if no attributes were deleted, because there were none, this should still return true.
@@ -898,7 +898,7 @@ function delete_file_cache_rs($file_cache_rs) {
  * confused with successful completion, but no files deleted.
  */
 function file_cache_delete_files($cache_type = 'HTTP', $expired_only = FALSE) {
-	$query = "SELECT sequence_number, cache_type, cache_file, cache_file_thumb FROM file_cache WHERE cache_type = '$cache_type' ";
+	$query = "SELECT sequence_number, cache_type, cache_file, cache_file_thumb FROM file_cache WHERE cache_type = '" . db_escape($cache_type) . "' ";
 	
 	if ($expired_only == EXPIRED_ONLY) {
 		$query .= " AND expire_date IS NOT NULL AND expire_date <= NOW()";
@@ -924,7 +924,7 @@ function file_cache_delete_files($cache_type = 'HTTP', $expired_only = FALSE) {
  This function does not take into consideration thumbnails, so should be used for HTTP cache only.
  */
 function file_cache_fetch_cache_size($cache_type = 'HTTP') {
-	$query = "SELECT SUM(content_length) AS total_size FROM file_cache WHERE cache_type = '$cache_type'";
+	$query = "SELECT SUM(content_length) AS total_size FROM file_cache WHERE cache_type = '" . db_escape($cache_type) . "'";
 	
 	$result = db_query ( $query );
 	if ($result && db_num_rows ( $result ) > 0) {

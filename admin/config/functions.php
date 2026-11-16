@@ -45,7 +45,7 @@ function fetch_s_config_group_rs($group_id = NULL) {
 	$query = "SELECT id, name, description " . "FROM s_config_group ";
 
 	if ($group_id != NULL)
-		$query .= "WHERE id = '$group_id' ";
+		$query .= "WHERE id = '" . db_escape($group_id) . "' ";
 	else
 		$query .= "WHERE id NOT LIKE '%.%' ";
 
@@ -59,7 +59,7 @@ function fetch_s_config_group_rs($group_id = NULL) {
 }
 
 function fetch_s_config_subgroup_rs($group_id) {
-	$query = "SELECT id, name, description " . "FROM s_config_group " . "WHERE id LIKE '" . $group_id . ".%' " . "ORDER by order_no, name, id";
+	$query = "SELECT id, name, description " . "FROM s_config_group " . "WHERE id LIKE '" . db_escape($group_id) . ".%' " . "ORDER by order_no, name, id";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -69,7 +69,7 @@ function fetch_s_config_subgroup_rs($group_id) {
 }
 
 function fetch_s_config_group_item_rs($group_id) {
-	$query = "SELECT group_id, id, keyid, if(length(prompt)>0,prompt,if(keyid!='0',CONCAT(id,'[',keyid,']'),id)) as prompt, description, type, subtype " . "FROM s_config_group_item " . "WHERE group_id = '$group_id' " . "ORDER by order_no, id, keyid";
+	$query = "SELECT group_id, id, keyid, if(length(prompt)>0,prompt,if(keyid!='0',CONCAT(id,'[',keyid,']'),id)) as prompt, description, type, subtype " . "FROM s_config_group_item " . "WHERE group_id = '" . db_escape($group_id) . "' " . "ORDER by order_no, id, keyid";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -83,12 +83,12 @@ Does a basic check to make sure the parent record exists.
  */
 function is_exists_s_config_group_item($group_id, $id, $keyid) {
 	if (strlen($group_id) > 0 && strlen($id) > 0 && strlen($keyid) > 0) {
-		$query = "SELECT 'x' FROM s_config_group_item WHERE group_id = '$group_id' AND id = '$id' ";
+		$query = "SELECT 'x' FROM s_config_group_item WHERE group_id = '" . db_escape($group_id) . "' AND id = '" . db_escape($id) . "' ";
 
 		if (is_numeric($keyid)) {
-			$query .= " AND (type = 'array' OR keyid = '$keyid') ";
+			$query .= " AND (type = 'array' OR keyid = '" . db_escape($keyid) . "') ";
 		} else {
-			$query .= " AND keyid = '$keyid' ";
+			$query .= " AND keyid = '" . db_escape($keyid) . "' ";
 		}
 
 		$result = db_query($query);
@@ -103,10 +103,10 @@ function is_exists_s_config_group_item($group_id, $id, $keyid) {
 
 function is_exists_s_config_group_item_var($group_id, $id, $keyid = NULL) {
 	if (strlen($group_id) > 0 && strlen($id) > 0) {
-		$query = "SELECT 'x' FROM s_config_group_item_var WHERE group_id = '$group_id' AND id = '$id' ";
+		$query = "SELECT 'x' FROM s_config_group_item_var WHERE group_id = '" . db_escape($group_id) . "' AND id = '" . db_escape($id) . "' ";
 
 		if (strlen($keyid)) {
-			$query .= " AND keyid = '$keyid' ";
+			$query .= " AND keyid = '" . db_escape($keyid) . "' ";
 		}
 
 		$result = db_query($query);
@@ -121,12 +121,12 @@ function is_exists_s_config_group_item_var($group_id, $id, $keyid = NULL) {
 
 function validate_s_config_group_item($group_id, $id, $keyid, $value) {
 	if (strlen($group_id) > 0 && strlen($id) > 0 && strlen($keyid) > 0) {
-		$query = "SELECT type, subtype FROM s_config_group_item WHERE group_id = '$group_id' AND id = '$id' ";
+		$query = "SELECT type, subtype FROM s_config_group_item WHERE group_id = '" . db_escape($group_id) . "' AND id = '" . db_escape($id) . "' ";
 
 		if (is_numeric($keyid)) {
-			$query .= " AND (type = 'array' OR keyid = '$keyid') ";
+			$query .= " AND (type = 'array' OR keyid = '" . db_escape($keyid) . "') ";
 		} else {
-			$query .= " AND keyid = '$keyid' ";
+			$query .= " AND keyid = '" . db_escape($keyid) . "' ";
 		}
 
 		$query .= "LIMIT 0,1";
@@ -211,7 +211,7 @@ function validate_s_config_group_item($group_id, $id, $keyid, $value) {
 			//    return addslashes(replace_newlines(trim($value)));
 
 			default:
-				return addslashes(replace_newlines(trim($value)));
+				return replace_newlines(trim($value));
 
 			}//switch
 
@@ -235,7 +235,7 @@ function insert_s_config_group_item_var($group_id, $id, $keyid, $value) {
 		if (is_exists_s_config_group_item($group_id, $id, $keyid)) {
 			$value = validate_s_config_group_item($group_id, $id, $keyid, $value);
 
-			$query = "INSERT INTO s_config_group_item_var (group_id, id, keyid, value) " . "VALUES ('$group_id', '$id', '$keyid', '" . $value . "')";
+			$query = "INSERT INTO s_config_group_item_var (group_id, id, keyid, value) " . "VALUES ('" . db_escape($group_id) . "', '" . db_escape($id) . "', '" . db_escape($keyid) . "', '" . db_escape($value) . "')";
 
 			$insert = db_query($query);
 			if ($insert && db_affected_rows() > 0) {
@@ -261,7 +261,7 @@ function update_s_config_group_item_var($group_id, $id, $keyid, $value) {
 	if (strlen($group_id) > 0 && strlen($id) > 0 && strlen($keyid) > 0) {
 		$value = validate_s_config_group_item($group_id, $id, $keyid, $value);
 
-		$query = "UPDATE s_config_group_item_var " . "SET value = '" . $value . "'" . " WHERE group_id = '$group_id' AND " . "id = '$id' AND " . "keyid = '$keyid'";
+		$query = "UPDATE s_config_group_item_var " . "SET value = '" . db_escape($value) . "'" . " WHERE group_id = '" . db_escape($group_id) . "' AND " . "id = '" . db_escape($id) . "' AND " . "keyid = '" . db_escape($keyid) . "'";
 
 		$update = db_query($query);
 
@@ -284,14 +284,14 @@ function update_s_config_group_item_var($group_id, $id, $keyid, $value) {
  */
 function delete_s_config_group_item_vars($group_id, $id, $keyid) {
 	if (strlen($group_id) > 0) {
-		$query = "DELETE FROM s_config_group_item_var " . "WHERE group_id = '$group_id'";
+		$query = "DELETE FROM s_config_group_item_var " . "WHERE group_id = '" . db_escape($group_id) . "'";
 
 		if (strlen($id) > 0) {
-			$query .= " AND id = '$id'";
+			$query .= " AND id = '" . db_escape($id) . "'";
 		}
 
 		if (strlen($keyid) > 0) {
-			$query .= " AND keyid = '$keyid'";
+			$query .= " AND keyid = '" . db_escape($keyid) . "'";
 		}
 
 		$delete = db_query($query);

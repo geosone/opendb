@@ -41,7 +41,7 @@ function fetch_s_file_type_rs() {
 }
 
 function fetch_s_file_type_alt_extension_r($content_type) {
-	$query = "SELECT extension " . "FROM s_file_type_extension " . "WHERE content_type = '$content_type' AND default_ind <> 'Y' " . "ORDER BY extension";
+	$query = "SELECT extension " . "FROM s_file_type_extension " . "WHERE content_type = '" . db_escape($content_type) . "' AND default_ind <> 'Y' " . "ORDER BY extension";
 
 	$results = db_query($query);
 	if ($results && db_num_rows($results) > 0) {
@@ -62,10 +62,10 @@ function insert_s_file_type($content_type, $content_group, $extension, $alt_exte
 	if (strlen($content_type) > 0 && !is_exists_file_type($content_type)) {
 		$content_group = strtoupper($content_group);
 		if (is_exists_file_type_content_group($content_group)) {
-			$description = addslashes(trim(strip_tags($description)));
+			$description = trim(strip_tags($description));
 			$thumbnail_support_ind = validate_ind_column($thumbnail_support_ind);
 
-			$query = "INSERT INTO s_file_type ( content_type, description, content_group, image, thumbnail_support_ind)" . "VALUES ('$content_type', '$description', '$content_group', '$image', '$thumbnail_support_ind')";
+			$query = "INSERT INTO s_file_type ( content_type, description, content_group, image, thumbnail_support_ind)" . "VALUES ('" . db_escape($content_type) . "', '" . db_escape($description) . "', '" . db_escape($content_group) . "', '" . db_escape($image) . "', '" . db_escape($thumbnail_support_ind) . "')";
 
 			$insert = db_query($query);
 			$rows_affected = db_affected_rows();
@@ -93,10 +93,10 @@ function update_s_file_type($content_type, $content_group, $extension, $alt_exte
 	if (is_exists_file_type($content_type)) {
 		$content_group = strtoupper($content_group);
 		if (is_exists_file_type_content_group($content_group)) {
-			$description = addslashes(trim(strip_tags($description)));
+			$description = trim(strip_tags($description));
 			$thumbnail_support_ind = validate_ind_column($thumbnail_support_ind);
 
-			$query = "UPDATE s_file_type " . "SET description = '$description', " . "content_group = '$content_group', " . "image = '$image', " . "thumbnail_support_ind = '$thumbnail_support_ind' " . " WHERE content_type = '$content_type'";
+			$query = "UPDATE s_file_type " . "SET description = '" . db_escape($description) . "', " . "content_group = '" . db_escape($content_group) . "', " . "image = '" . db_escape($image) . "', " . "thumbnail_support_ind = '" . db_escape($thumbnail_support_ind) . "' " . " WHERE content_type = '" . db_escape($content_type) . "'";
 
 			$update = db_query($query);
 
@@ -138,7 +138,7 @@ function insert_s_file_type_extensions($content_type, $default_extension, $alt_e
 				foreach ($extensions_r as $extension) {
 					$extension = strtolower(trim($extension));
 					if (strlen($extension) > 0) {
-						$query = "INSERT INTO s_file_type_extension ( content_type, extension, default_ind )" . "VALUES ('$content_type', '" . $extension . "', '" . ($extension == $default_extension ? 'Y' : 'N') . "')";
+						$query = "INSERT INTO s_file_type_extension ( content_type, extension, default_ind )" . "VALUES ('" . db_escape($content_type) . "', '" . db_escape($extension) . "', '" . db_escape(($extension == $default_extension ? 'Y' : 'N')) . "')";
 
 						$insert = db_query($query);
 						$rows_affected = db_affected_rows();
@@ -170,7 +170,7 @@ function delete_s_file_type($content_type) {
 	$content_type = validate_content_type($content_type);
 	if (is_exists_file_type($content_type)) {
 		if (delete_s_file_type_extensions($content_type)) {
-			$query = "DELETE FROM s_file_type " . "WHERE content_type = '$content_type'";
+			$query = "DELETE FROM s_file_type " . "WHERE content_type = '" . db_escape($content_type) . "'";
 			$delete = db_query($query);
 
 			// We should not treat updates that were not actually updated because value did not change as failures.
@@ -194,7 +194,7 @@ function delete_s_file_type($content_type) {
 function delete_s_file_type_extensions($content_type) {
 	$content_type = validate_content_type($content_type);
 	if (is_exists_file_type($content_type)) {
-		$query = "DELETE FROM s_file_type_extension " . "WHERE content_type = '$content_type'";
+		$query = "DELETE FROM s_file_type_extension " . "WHERE content_type = '" . db_escape($content_type) . "'";
 
 		$delete = db_query($query);
 		$rows_affected = db_affected_rows();

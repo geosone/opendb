@@ -40,7 +40,7 @@ function fetch_system_table_column_langvar_rs($language, $table, $column, $optio
 			$query .= " FROM $table t ";
 
 			$query .= "LEFT OUTER JOIN s_table_language_var stlv ON 
-					stlv.language = '$language' AND stlv.tablename = '$table' AND stlv.columnname = '$column' ";
+					stlv.language = '" . db_escape($language) . "' AND stlv.tablename = '" . db_escape($table) . "' AND stlv.columnname = '" . db_escape($column) . "' ";
 
 			for ($i = 1; $i <= count($tableconf_r['key']); $i++) {
 				$query .= " AND stlv.key$i = t." . $tableconf_r['key'][$i - 1];
@@ -51,7 +51,7 @@ function fetch_system_table_column_langvar_rs($language, $table, $column, $optio
 	} else {
 		$query = "SELECT tablename, columnname, key1, key2, key3, value
 			FROM s_table_language_var
-			WHERE language = '$language' AND tablename = '$table' AND columnname = '$column'";
+			WHERE language = '" . db_escape($language) . "' AND tablename = '" . db_escape($table) . "' AND columnname = '" . db_escape($column) . "'";
 	}
 
 	// todo - is this legal for MySQL 4.0?	
@@ -74,12 +74,12 @@ function fetch_language_langvar_rs($language, $options = NULL) {
 		$query = "SELECT dflt.value AS default_value, slv.value, dflt.varname
 			FROM s_language_var dflt
 			LEFT JOIN s_language_var slv
-			ON slv.language = '$language' AND slv.varname = dflt.varname
+			ON slv.language = '" . db_escape($language) . "' AND slv.varname = dflt.varname
 			WHERE dflt.language = '" . fetch_default_language() . "'";
 	} else {
 		$query = "SELECT value, varname
 			FROM s_language_var
-			WHERE language = '$language'";
+			WHERE language = '" . db_escape($language) . "'";
 	}
 
 	$query .= " ORDER BY varname ";
@@ -111,9 +111,9 @@ function validate_s_table($table, $key1, $key2, $key3) {
 
 function insert_s_language_var($language, $varname, $value) {
 	if (is_exists_language($language) && strlen($varname) > 0 && strlen($value) > 0) {
-		$value = addslashes($value);
+		$value = $value;
 
-		$query = "INSERT INTO s_language_var (language, varname, value) " . "VALUES ('$language', '$varname', '" . $value . "')";
+		$query = "INSERT INTO s_language_var (language, varname, value) " . "VALUES ('" . db_escape($language) . "', '" . db_escape($varname) . "', '" . db_escape($value) . "')";
 
 		$insert = db_query($query);
 		if ($insert && db_affected_rows() > 0) {
@@ -131,9 +131,9 @@ function insert_s_language_var($language, $varname, $value) {
 
 function insert_s_table_language_var($language, $table, $column, $key1, $key2, $key3, $value) {
 	if (is_exists_language($language) && validate_s_table($table, $key1, $key2, $key3)) {
-		$value = addslashes($value);
+		$value = $value;
 
-		$query = "INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) " . "VALUES ('$language', '$table', '" . $column . "', '" . $key1 . "', '" . $key2 . "', '" . $key3 . "', '" . $value . "')";
+		$query = "INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) " . "VALUES ('" . db_escape($language) . "', '" . db_escape($table) . "', '" . db_escape($column) . "', '" . db_escape($key1) . "', '" . db_escape($key2) . "', '" . db_escape($key3) . "', '" . db_escape($value) . "')";
 
 		$insert = db_query($query);
 		if ($insert && db_affected_rows() > 0) {
@@ -153,9 +153,9 @@ function insert_s_table_language_var($language, $table, $column, $key1, $key2, $
  */
 function update_s_language_var($language, $varname, $value) {
 	if (is_exists_language($language) && strlen($varname) > 0 && strlen($value) > 0) {
-		$value = addslashes($value);
+		$value = $value;
 
-		$query = "UPDATE s_language_var " . "SET value = '" . $value . "'" . " WHERE language = '$language' AND " . "varname = '$varname'";
+		$query = "UPDATE s_language_var " . "SET value = '" . db_escape($value) . "'" . " WHERE language = '" . db_escape($language) . "' AND " . "varname = '" . db_escape($varname) . "'";
 
 		$update = db_query($query);
 
@@ -176,17 +176,17 @@ function update_s_language_var($language, $varname, $value) {
 
 function update_s_table_language_var($language, $table, $column, $key1, $key2, $key3, $value) {
 	if (is_exists_language($language) && validate_s_table($table, $key1, $key2, $key3)) {
-		$value = addslashes($value);
+		$value = $value;
 
-		$query = "UPDATE s_table_language_var " . "SET value = '" . $value . "'" . " WHERE language = '$language' AND tablename = '$table' AND columnname = '$column' AND key1 = '$key1'";
+		$query = "UPDATE s_table_language_var " . "SET value = '" . db_escape($value) . "'" . " WHERE language = '" . db_escape($language) . "' AND tablename = '" . db_escape($table) . "' AND columnname = '" . db_escape($column) . "' AND key1 = '" . db_escape($key1) . "'";
 
 		if (strlen($key2) > 0)
-			$query .= " AND key2 = '$key2'";
+			$query .= " AND key2 = '" . db_escape($key2) . "'";
 		else
 			$query .= " AND key2 = ''";
 
 		if (strlen($key3) > 0)
-			$query .= " AND key3 = '$key3'";
+			$query .= " AND key3 = '" . db_escape($key3) . "'";
 		else
 			$query .= " AND key3 = ''";
 
@@ -211,10 +211,10 @@ function update_s_table_language_var($language, $table, $column, $key1, $key2, $
  */
 function delete_s_language_var($language, $varname = NULL) {
 	if (is_exists_language($language)) {
-		$query = "DELETE FROM s_language_var " . "WHERE language = '$language'";
+		$query = "DELETE FROM s_language_var " . "WHERE language = '" . db_escape($language) . "'";
 
 		if (strlen($varname) > 0) {
-			$query .= " AND varname = '$varname'";
+			$query .= " AND varname = '" . db_escape($varname) . "'";
 		}
 
 		$delete = db_query($query);
@@ -235,21 +235,21 @@ function delete_s_language_var($language, $varname = NULL) {
 
 function delete_s_table_language_var($language, $table = NULL, $column = NULL, $key1 = NULL, $key2 = NULL, $key3 = NULL) {
 	if (is_exists_language($language) && ($table == NULL || validate_s_table($table, $key1, $key2, $key3))) {
-		$query = "DELETE FROM s_table_language_var " . "WHERE language = '$language'";
+		$query = "DELETE FROM s_table_language_var " . "WHERE language = '" . db_escape($language) . "'";
 
 		if (strlen($table) > 0 && strlen($column) > 0) {
-			$query .= " AND tablename = '$table' AND columnname = '$column'";
+			$query .= " AND tablename = '" . db_escape($table) . "' AND columnname = '" . db_escape($column) . "'";
 
 			if (strlen($key1) > 0) {
-				$query .= " AND key1 = '$key1'";
+				$query .= " AND key1 = '" . db_escape($key1) . "'";
 
 				if (strlen($key2) > 0)
-					$query .= " AND key2 = '$key2'";
+					$query .= " AND key2 = '" . db_escape($key2) . "'";
 				else
 					$query .= " AND key2 = ''";
 
 				if (strlen($key3) > 0)
-					$query .= " AND key3 = '$key3'";
+					$query .= " AND key3 = '" . db_escape($key3) . "'";
 				else
 					$query .= " AND key3 = ''";
 			}
@@ -273,7 +273,7 @@ function delete_s_table_language_var($language, $table = NULL, $column = NULL, $
 
 function delete_s_language($language) {
 	if (is_exists_language($language)) {
-		$query = "DELETE FROM s_language " . "WHERE language = '$language'";
+		$query = "DELETE FROM s_language " . "WHERE language = '" . db_escape($language) . "'";
 
 		$delete = db_query($query);
 		// We should not treat deletes that were not actually updated because value did not change as failures.

@@ -29,8 +29,8 @@ function fetch_item_instance_for_attribute_val_rs($attribute_val, $s_attribute_t
 	$query = "SELECT ii.item_id, ii.instance_no, ii.s_status_type, ii.status_comment, ii.borrow_duration, ii.owner_id, i.title, i.s_item_type
 			FROM item_attribute ia, item_instance ii, item i
 			WHERE i.id = ii.item_id AND ii.item_id = ia.item_id AND ii.instance_no = ia.instance_no AND
-			ia.attribute_val = '$attribute_val' AND
-			ia.s_attribute_type = '$s_attribute_type' ";
+			ia.attribute_val = '" . db_escape($attribute_val) . "' AND
+			ia.s_attribute_type = '" . db_escape($s_attribute_type) . "' ";
 	
 	$results = db_query ( $query );
 	return db_result_or_false($result);
@@ -40,7 +40,7 @@ function fetch_item_instance_for_attribute_val_rs($attribute_val, $s_attribute_t
 	Checks that the $s_attribute_type actually exists
 */
 function is_exists_attribute_type($s_attribute_type) {
-	$query = "SELECT 'x' FROM s_attribute_type WHERE s_attribute_type = '" . $s_attribute_type . "'";
+	$query = "SELECT 'x' FROM s_attribute_type WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 	$result = db_query ( $query );
 	return db_result_has_rows($result);
 }
@@ -50,7 +50,7 @@ function is_exists_attribute_type($s_attribute_type) {
 * specific s_item_attribute_type attached.
 */
 function is_exists_site_item_attribute($site_type, $item_id, $instance_no) {
-	$query = "SELECT 'X' " . "FROM s_attribute_type sit, " . "	item_attribute ia " . "WHERE ia.s_attribute_type = sit.s_attribute_type AND " . "ia.item_id = '" . $item_id . "' AND " . "(ia.instance_no = 0 OR ia.instance_no = '" . $instance_no . "') AND " . "sit.site_type = '" . $site_type . "'";
+	$query = "SELECT 'X' " . "FROM s_attribute_type sit, " . "	item_attribute ia " . "WHERE ia.s_attribute_type = sit.s_attribute_type AND " . "ia.item_id = '" . db_escape($item_id) . "' AND " . "(ia.instance_no = 0 OR ia.instance_no = '" . db_escape($instance_no) . "') AND " . "sit.site_type = '" . db_escape($site_type) . "'";
 	
 	$result = db_query ( $query );
 	return db_result_has_rows($result);
@@ -86,7 +86,7 @@ function fetch_attribute_type_lookup_rs($s_attribute_type = NULL, $order_by = 'v
 	$query .= " WHERE sat.s_attribute_type = satl.s_attribute_type ";
 	
 	if (strlen ( $s_attribute_type ) > 0) {
-		$query .= " AND satl.s_attribute_type = '" . $s_attribute_type . "'";
+		$query .= " AND satl.s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 	}
 	
 	if (is_string ( $order_by )) {
@@ -107,7 +107,7 @@ function fetch_field_type_attribute_lookup_rs($field_type) {
 		stlv.key1 = satl.s_attribute_type AND
 		stlv.key2 = satl.value 
 	WHERE sat.s_attribute_type = satl.s_attribute_type AND 
-		sat.s_field_type = '$field_type'
+		sat.s_field_type = '" . db_escape($field_type) . "'
 	ORDER BY order_no, value ASC";
 	
 	$result = db_query ( $query );
@@ -127,7 +127,7 @@ function fetch_attribute_type_lookup_r($s_attribute_type, $value, $column = NULL
 	stlv.columnname = 'display' AND
 	stlv.key1 = s_attribute_type AND
 	stlv.key2 = satl.value 
-	WHERE satl.s_attribute_type = '" . $s_attribute_type . "' AND satl.value = '$value'";
+	WHERE satl.s_attribute_type = '" . db_escape($s_attribute_type) . "' AND satl.value = '" . db_escape($value) . "'";
 	
 	$result = db_query ( $query );
 	return db_result_single_lookup($result, $column);
@@ -137,7 +137,7 @@ function fetch_value_match_attribute_type_lookup_rs($s_attribute_type, $value_ar
 	$query = "SELECT satl.value, IF(LENGTH(IFNULL(stlv.value, display))>0,IFNULL(stlv.value, display),satl.value) AS display, img, checked_ind " .
 	    "FROM s_attribute_type_lookup satl LEFT JOIN s_table_language_var stlv ON stlv.language = '" . get_opendb_site_language () .
 	    "' AND stlv.tablename = 's_attribute_type_lookup' AND stlv.columnname = 'display' AND stlv.key1 = s_attribute_type AND stlv.key2 = satl.value WHERE satl.s_attribute_type = '" .
-	    $s_attribute_type . "' AND satl.value IN (" . format_sql_in_clause ( $value_array ) . ") " . "ORDER BY satl.order_no, $order_by $order";
+	    db_escape($s_attribute_type) . "' AND satl.value IN (" . format_sql_in_clause ( $value_array ) . ") " . "ORDER BY satl.order_no, $order_by $order";
 	
 	$result = db_query ( $query );
 	return db_result_or_false($result);
@@ -151,9 +151,9 @@ function fetch_attribute_type_lookup_value($s_attribute_type, $value) {
 	if (strlen ( $value ) > 0) {
 	    $esc = db_escape(strtolower ( $value ) );
 	    
-		$query = "SELECT value FROM s_attribute_type_lookup " . "WHERE s_attribute_type = '" . $s_attribute_type .
-		    "' AND LOWER(value) = '" . $esc .
-		    "' OR LOWER(display) = '" . $esc . "'";
+		$query = "SELECT value FROM s_attribute_type_lookup " . "WHERE s_attribute_type = '" . db_escape($s_attribute_type) .
+		    "' AND LOWER(value) = '" . db_escape($esc) .
+		    "' OR LOWER(display) = '" . db_escape($esc) . "'";
 		
 		$result = db_query ( $query );
 		return db_result_single_lookup($result, 'value');
@@ -166,21 +166,21 @@ function fetch_attribute_type_lookup_value($s_attribute_type, $value) {
 * s_attribute_type.
 */
 function is_exists_lookup_value($s_attribute_type, $attribute_val) {
-	$query = "SELECT 'x' FROM s_attribute_type_lookup WHERE s_attribute_type = '$s_attribute_type' AND " . "value = '" . addslashes ( $attribute_val ) . "' LIMIT 0,1";
+	$query = "SELECT 'x' FROM s_attribute_type_lookup WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "' AND " . "value = '" . addslashes ( $attribute_val ) . "' LIMIT 0,1";
 	
 	$result = db_query ( $query );
 	return db_result_has_rows($result);
 }
 
 function is_lookup_attribute_type($s_attribute_type) {
-	$query = "SELECT lookup_attribute_ind FROM s_attribute_type WHERE s_attribute_type = '$s_attribute_type'";
+	$query = "SELECT lookup_attribute_ind FROM s_attribute_type WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 	
 	$result = db_query ( $query );
 	return (db_result_single_lookup($result, 'lookup_attribute_ind') == 'Y');
 }
 
 function is_multivalue_attribute_type($s_attribute_type) {
-	$query = "SELECT multi_attribute_ind, lookup_attribute_ind FROM s_attribute_type WHERE s_attribute_type = '$s_attribute_type'";
+	$query = "SELECT multi_attribute_ind, lookup_attribute_ind FROM s_attribute_type WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 	
 	$result = db_query ( $query );
 	$found = db_result_single_row($result);
@@ -191,7 +191,7 @@ function is_multivalue_attribute_type($s_attribute_type) {
 }
 
 function is_file_resource_attribute_type($s_attribute_type) {
-	$query = "SELECT file_attribute_ind FROM s_attribute_type WHERE s_attribute_type = '$s_attribute_type'";
+	$query = "SELECT file_attribute_ind FROM s_attribute_type WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 	
 	$result = db_query ( $query );
 	return (db_result_single_lookup($result, 'file_attribute_ind') == 'Y');
@@ -283,7 +283,7 @@ function fetch_item_attribute_type_rs($s_item_type, $restrict_type = NULL, $orde
 		WHERE	sat.s_attribute_type = siat.s_attribute_type ";
 	
 	if (strlen ( $s_item_type ) > 0) {
-		$query .= "AND siat.s_item_type = '" . $s_item_type . "' ";
+		$query .= "AND siat.s_item_type = '" . db_escape($s_item_type) . "' ";
 	}
 	
 	if ($restrict_type == 'rss_ind') {
@@ -299,7 +299,7 @@ function fetch_item_attribute_type_rs($s_item_type, $restrict_type = NULL, $orde
 	} else if ($restrict_type == 'not_instance_field_types') {
 		$query .= "AND (sat.s_field_type IS NULL OR UPPER(sat.s_field_type) NOT IN('STATUSTYPE','STATUSCMNT','DURATION')) ";
 	} else if (is_valid_field_type ( $restrict_type )) {
-		$query .= "AND UPPER(sat.s_field_type) IN('" . strtoupper ( $restrict_type ) . "') ";
+		$query .= "AND UPPER(sat.s_field_type) IN('" . db_escape(strtoupper ( $restrict_type )) . "') ";
 	}
 	
 	if ($distinct) {
@@ -336,17 +336,17 @@ function fetch_s_item_type_attr_prompt($s_item_type, $s_attribute_type, $order_n
 				stlv2.columnname = 'prompt' AND
 				stlv2.key1 = siat.s_item_type AND
 				stlv2.key2 = siat.s_attribute_type AND
-				stlv2.key3 = siat.order_no " . "WHERE siat.s_item_type = '$s_item_type' AND " . "siat.s_attribute_type = sat.s_attribute_type AND " . "sat.s_attribute_type = '$s_attribute_type' ";
+				stlv2.key3 = siat.order_no " . "WHERE siat.s_item_type = '" . db_escape($s_item_type) . "' AND " . "siat.s_attribute_type = sat.s_attribute_type AND " . "sat.s_attribute_type = '" . db_escape($s_attribute_type) . "' ";
 	
 	if (is_numeric ( $order_no ))
-		$query .= "AND sat.order_no = '$order_no' ";
+		$query .= "AND sat.order_no = '" . db_escape($order_no) . "' ";
 	
 	$result = db_query ( $query );
 	return db_result_single_lookup($result, 'prompt');
 }
 
 function fetch_s_item_attribute_type_next_order_no($s_item_type, $s_attribute_type, $order_no = NULL) {
-	$query = "SELECT order_no " . "FROM 	s_item_attribute_type " . "WHERE 	s_item_type = '$s_item_type' AND " . "		s_attribute_type = '$s_attribute_type' ";
+	$query = "SELECT order_no " . "FROM 	s_item_attribute_type " . "WHERE 	s_item_type = '" . db_escape($s_item_type) . "' AND " . "		s_attribute_type = '" . db_escape($s_attribute_type) . "' ";
 	
 	if (is_numeric ( $order_no )) {
 		$query .= " AND	order_no > $order_no ";
@@ -367,14 +367,14 @@ function fetch_attribute_type_r($s_attribute_type) {
 				stlv2.language = '" . get_opendb_site_language () . "' AND
 				stlv2.tablename = 's_attribute_type' AND
 				stlv2.columnname = 'description' AND
-				stlv2.key1 = sat.s_attribute_type " . "WHERE	sat.s_attribute_type = '" . $s_attribute_type . "'";
+				stlv2.key1 = sat.s_attribute_type " . "WHERE	sat.s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 	
 	$result = db_query ( $query );
 	return db_result_single_row($result);
 }
 
 function fetch_attribute_type_cnt($s_attribute_type) {
-	$query = "SELECT count('x') as count FROM s_attribute_type_lookup WHERE s_attribute_type = '" . $s_attribute_type . "'";
+	$query = "SELECT count('x') as count FROM s_attribute_type_lookup WHERE s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 	$result = db_query ( $query );
 	return db_result_single_lookup($result, 'count');
 }
@@ -397,7 +397,7 @@ function fetch_attribute_val($item_id, $instance_no, $s_attribute_type, $order_n
 * Return array of attribute_val's for $s_attribute_type, $order_no, $item_id, $instance_no
 */
 function fetch_attribute_val_r($item_id, $instance_no, $s_attribute_type, $order_no = NULL) {
-	$query = "SELECT item_id, instance_no, s_attribute_type, order_no, attribute_no, lookup_attribute_val, attribute_val FROM item_attribute " . "WHERE item_id = '$item_id' AND " . "s_attribute_type = '$s_attribute_type'";
+	$query = "SELECT item_id, instance_no, s_attribute_type, order_no, attribute_no, lookup_attribute_val, attribute_val FROM item_attribute " . "WHERE item_id = '" . db_escape($item_id) . "' AND " . "s_attribute_type = '" . db_escape($s_attribute_type) . "'";
 	
 	if (is_numeric ( $instance_no ))
 		$query .= " AND (instance_no = 0 OR instance_no = $instance_no) ";
@@ -405,7 +405,7 @@ function fetch_attribute_val_r($item_id, $instance_no, $s_attribute_type, $order
 		// Only add order_no where condition if order_no defined, otherwise we
 		// will return the first instance of s_attribute_type.
 	if (is_numeric ( $order_no ))
-		$query .= " AND order_no = '$order_no'";
+		$query .= " AND order_no = '" . db_escape($order_no) . "'";
 	
 	$query .= " ORDER BY attribute_no";
 	
@@ -438,13 +438,13 @@ function fetch_attribute_val_r($item_id, $instance_no, $s_attribute_type, $order
 */
 function is_item_attribute_set($item_id, $instance_no, $s_attribute_type, $order_no = NULL) {
 	if (is_numeric ( $item_id ) && strlen ( $s_attribute_type ) > 0) {
-		$query = "SELECT count('x') as count FROM item_attribute " . "WHERE item_id = '" . $item_id . "' AND " . "s_attribute_type = '" . $s_attribute_type . "' ";
+		$query = "SELECT count('x') as count FROM item_attribute " . "WHERE item_id = '" . db_escape($item_id) . "' AND " . "s_attribute_type = '" . db_escape($s_attribute_type) . "' ";
 		
 		if (is_numeric ( $instance_no ))
 			$query .= " AND (instance_no = 0 OR instance_no = $instance_no) ";
 		
 		if (is_numeric ( $order_no ))
-			$query .= "AND order_no = '" . $order_no . "'";
+			$query .= "AND order_no = '" . db_escape($order_no) . "'";
 		
 		$result = db_query ( $query );
 		$count = db_result_single_lookup($result, 'count');
@@ -461,10 +461,10 @@ function validate_attribute_val_r($attribute_val_r, $remove_duplicates = FALSE) 
 	$value_r = array ();
 	
 	if (! is_array( $attribute_val_r) && strlen ( trim ( $attribute_val_r ) ) > 0)
-		$value_r [] = addslashes ( trim ( replace_newlines ( $attribute_val_r ) ) );
+		$value_r [] =  trim ( replace_newlines ( $attribute_val_r ) ) ;
 	else {
 		for($i = 0; $i < count ( $attribute_val_r ); $i ++) {
-			$value = addslashes ( trim ( replace_newlines ( $attribute_val_r [$i] ) ) );
+			$value =  trim ( replace_newlines ( $attribute_val_r [$i] ) ) ;
 			
 			// lets make sure this $value does not already exist
 			if (strlen ( $value ?? "") > 0 && (! $remove_duplicates || ! is_array ( $value_r ) || array_search ( $value, $value_r ) === FALSE)) {
@@ -485,12 +485,12 @@ function validate_attribute_val_r($attribute_val_r, $remove_duplicates = FALSE) 
 function fetch_arrayof_item_attribute_rs($item_id, $instance_no, $s_attribute_type, $order_no) {
 	$query = "SELECT attribute_val, lookup_attribute_val, attribute_no, update_on
 	FROM item_attribute 
-	WHERE item_id='" . $item_id . "' ";
+	WHERE item_id='" . db_escape($item_id) . "' ";
 	
 	if (is_numeric ( $instance_no ))
-		$query .= " AND instance_no = '$instance_no'";
+		$query .= " AND instance_no = '" . db_escape($instance_no) . "'";
 	
-	$query .= " AND s_attribute_type = '" . $s_attribute_type . "' AND order_no = '" . $order_no . "' 
+	$query .= " AND s_attribute_type = '" . db_escape($s_attribute_type) . "' AND order_no = '" . db_escape($order_no) . "' 
 	ORDER BY attribute_no";
 	
 	$results = db_query ( $query );
@@ -550,7 +550,7 @@ function get_filename_list($file_r) {
 			FROM item_attribute ia, s_attribute_type sat 
 			 WHERE ia.s_attribute_type = sat.s_attribute_type AND 
 			 sat.file_attribute_ind = 'Y' AND 
-			 ia.attribute_val LIKE '{$file_r['name']}%.{$file_r['extension']}'";
+			 ia.attribute_val LIKE '" . db_escape($file_r['name']) . "%." . db_escape($file_r['extension']) . "'";
 	
 	$filename_r = array ();
 	$results = db_result_or_false(db_query( $query ));
@@ -565,14 +565,14 @@ function get_filename_list($file_r) {
 }
 
 function is_exists_upload_file_item_attribute($filename) {
-	$filename = addslashes ( $filename );
+	$filename =  $filename ;
 	
 	$query = "SELECT 'X' 
 			FROM item_attribute ia,
 				s_attribute_type sat
 			WHERE ia.s_attribute_type = sat.s_attribute_type AND
 			sat.file_attribute_ind = 'Y' AND
-			ia.attribute_val = '$filename'";
+			ia.attribute_val = '" . db_escape($filename) . "'";
 	
 	$result = db_query ( $query );
 	return db_result_has_rows($result);
@@ -690,7 +690,7 @@ function _insert_or_update_item_attributes($item_id, $instance_no, $s_item_type,
 
 function insert_item_attribute($item_id, $instance_no, $s_attribute_type, $order_no, $attribute_no, $lookup_attribute_val, $attribute_val) {
 	if ($attribute_val !== NULL || $lookup_attribute_val !== NULL) {
-		$query = "INSERT INTO item_attribute (item_id, instance_no, s_attribute_type, order_no, attribute_no, lookup_attribute_val, attribute_val)" . "VALUES ($item_id, " . (is_numeric ( $instance_no ) ? $instance_no : "0") . ", '$s_attribute_type', $order_no, $attribute_no, " . ($lookup_attribute_val !== NULL ? "'$lookup_attribute_val'" : "NULL") . ", " . ($attribute_val !== NULL ? "'$attribute_val'" : "NULL") . ")";
+		$query = "INSERT INTO item_attribute (item_id, instance_no, s_attribute_type, order_no, attribute_no, lookup_attribute_val, attribute_val)" . "VALUES ($item_id, " . (is_numeric ( $instance_no ) ? $instance_no : "0") . ", '" . db_escape($s_attribute_type) . "', $order_no, $attribute_no, " . ($lookup_attribute_val !== NULL ? "'" . db_escape($lookup_attribute_val) . "'" : "NULL") . ", " . ($attribute_val !== NULL ? "'" . db_escape($attribute_val) . "'" : "NULL") . ")";
 		
 		$insert = db_query ( $query );
 		if ($insert && db_affected_rows () > 0) {
@@ -734,12 +734,12 @@ function update_item_attribute($item_id, $instance_no, $s_attribute_type, $order
 			$query .= ", lookup_attribute_val = NULL";
 		}
 		
-		$query .= " WHERE item_id = '$item_id'";
+		$query .= " WHERE item_id = '" . db_escape($item_id) . "'";
 		if (is_numeric ( $instance_no )) {
-			$query .= " AND instance_no = $instance_no ";
+			$query .= " AND instance_no = " . db_int($instance_no) . " ";
 		}
 		
-		$query .= " AND s_attribute_type = '$s_attribute_type' and order_no = $order_no AND attribute_no = $attribute_no";
+		$query .= " AND s_attribute_type = '" . db_escape($s_attribute_type) . "' and order_no = $order_no AND attribute_no = $attribute_no";
 		
 		$update = db_query ( $query );
 		$rows_affected = db_affected_rows ();
@@ -774,16 +774,16 @@ function update_item_attribute($item_id, $instance_no, $s_attribute_type, $order
 Does not delete any item cache files
 */
 function delete_item_attributes($item_id, $instance_no = NULL, $s_attribute_type = NULL, $order_no = NULL) {
-    $query = "DELETE FROM item_attribute " . "WHERE item_id = '" . $item_id . "' ";
+    $query = "DELETE FROM item_attribute " . "WHERE item_id = '" . db_escape($item_id) . "' ";
 	
     if (is_numeric( $instance_no ))
 	$query .= "AND (instance_no = 0 OR instance_no = " . $instance_no . ") ";
 	
     if (strlen ( $s_attribute_type ) > 0)
-	$query .= "AND s_attribute_type = '" . $s_attribute_type . "' ";
+	$query .= "AND s_attribute_type = '" . db_escape($s_attribute_type) . "' ";
 	
     if (is_numeric ( $order_no ))
-	$query .= "AND order_no = '" . $order_no . "'";
+	$query .= "AND order_no = '" . db_escape($order_no) . "'";
 	
     $delete = db_query ( $query );
     if ($delete) {	// Even if no attributes were deleted, because there were none, this should still return true.

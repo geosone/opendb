@@ -87,7 +87,7 @@ If called from insert process, the table has been locked
  */
 function is_exists_s_item_listing_conf($silc_id) {
 	if (strlen($silc_id) > 0) {
-		$query = "SELECT 'x' FROM s_item_listing_conf WHERE id = $silc_id";
+		$query = "SELECT 'x' FROM s_item_listing_conf WHERE id = " . db_int($silc_id);
 		$result = db_query($query);
 		if ($result && db_num_rows($result) > 0) {
 			db_free_result($result);
@@ -101,7 +101,7 @@ function is_exists_s_item_listing_conf($silc_id) {
 function insert_s_item_listing_conf($s_item_type_group, $s_item_type) {
 	if (strlen($s_item_type_group) > 0 && strlen($s_item_type) > 0) {
 		if (($s_item_type_group == '*' || is_exists_item_type_group($s_item_type_group)) && ($s_item_type == '*' || is_exists_item_type($s_item_type))) {
-			$query = "INSERT INTO s_item_listing_conf (s_item_type_group, s_item_type) " . "VALUES ('$s_item_type_group', '$s_item_type')";
+			$query = "INSERT INTO s_item_listing_conf (s_item_type_group, s_item_type) " . "VALUES ('" . db_escape($s_item_type_group) . "', '" . db_escape($s_item_type) . "')";
 
 			$insert = db_query($query);
 			if ($insert && db_affected_rows() > 0) {
@@ -265,8 +265,8 @@ function insert_s_item_listing_column_conf($silc_id, $column_no, $column_type, $
 		if ($skip_validations == TRUE || is_exists_s_item_listing_conf($silc_id)) {
 			if ($skip_validations == TRUE || validate_item_column_conf($column_no, $column_type, $s_field_type, $s_attribute_type, $override_prompt, $printable_support_ind, $orderby_support_ind, $orderby_datatype, $orderby_default_ind, $orderby_sort_order, $error)) {
 				$query = 'INSERT INTO s_item_listing_column_conf (' . 'silc_id, ' . 'column_no, ' . 'column_type, ' . 's_field_type, ' . 's_attribute_type, ' . 'override_prompt, ' . 'printable_support_ind, ' . 'orderby_support_ind, ' . 'orderby_datatype, ' . 'orderby_default_ind, '
-						. 'orderby_sort_order) ' . 'VALUES (' . "'$silc_id', " . "$column_no, " . "'$column_type', " . "'$s_field_type', " . "'$s_attribute_type', " . "'" . addslashes(trim(strip_tags($override_prompt))) . "', " . "'$printable_support_ind', " . "'$orderby_support_ind', "
-						. "'$orderby_datatype', " . "'$orderby_default_ind', " . "'$orderby_sort_order') ";
+						. 'orderby_sort_order) ' . 'VALUES (' . "'" . db_escape($silc_id) . "', " . "$column_no, " . "'" . db_escape($column_type) . "', " . "'" . db_escape($s_field_type) . "', " . "'" . db_escape($s_attribute_type) . "', " . "'" . addslashes(trim(strip_tags($override_prompt))) . "', " . "'" . db_escape($printable_support_ind) . "', " . "'" . db_escape($orderby_support_ind) . "', "
+						. "'" . db_escape($orderby_datatype) . "', " . "'" . db_escape($orderby_default_ind) . "', " . "'" . db_escape($orderby_sort_order) . "') ";
 
 				$insert = db_query($query);
 				if ($insert && db_affected_rows() > 0) {
@@ -297,8 +297,8 @@ function update_s_item_listing_column_conf($silc_id, $column_no, $column_type, $
 		// ensure parent record exists
 		if ($skip_validations == TRUE || is_exists_s_item_listing_conf($silc_id)) {
 			if ($skip_validations == TRUE || validate_item_column_conf($column_no, $column_type, $s_field_type, $s_attribute_type, $override_prompt, $printable_support_ind, $orderby_support_ind, $orderby_datatype, $orderby_default_ind, $orderby_sort_order, $error)) {
-				$query = "UPDATE s_item_listing_column_conf " . "SET column_type = '$column_type', " . "s_field_type = '$s_field_type', " . "s_attribute_type = '$s_attribute_type', " . "override_prompt = '$override_prompt', " . "printable_support_ind = '$printable_support_ind', "
-						. "orderby_support_ind = '$orderby_support_ind', " . "orderby_datatype = '$orderby_datatype', " . "orderby_default_ind = '$orderby_default_ind', " . "orderby_sort_order = '$orderby_sort_order' " . "WHERE silc_id = $silc_id AND column_no = $column_no";
+				$query = "UPDATE s_item_listing_column_conf " . "SET column_type = '" . db_escape($column_type) . "', " . "s_field_type = '" . db_escape($s_field_type) . "', " . "s_attribute_type = '" . db_escape($s_attribute_type) . "', " . "override_prompt = '" . db_escape($override_prompt) . "', " . "printable_support_ind = '" . db_escape($printable_support_ind) . "', "
+						. "orderby_support_ind = '" . db_escape($orderby_support_ind) . "', " . "orderby_datatype = '" . db_escape($orderby_datatype) . "', " . "orderby_default_ind = '" . db_escape($orderby_default_ind) . "', " . "orderby_sort_order = '" . db_escape($orderby_sort_order) . "' " . "WHERE silc_id = " . db_int($silc_id) . " AND column_no = $column_no";
 
 				$update = db_query($query);
 
@@ -324,7 +324,7 @@ function update_s_item_listing_column_conf($silc_id, $column_no, $column_type, $
 function delete_s_item_listing_column_conf($silc_id, $column_no = NULL) {
 	// ensure parent record exists
 	if (is_exists_s_item_listing_conf($silc_id)) {
-		$query = "DELETE FROM s_item_listing_column_conf " . " WHERE silc_id = '$silc_id' ";
+		$query = "DELETE FROM s_item_listing_column_conf " . " WHERE silc_id = '" . db_escape($silc_id) . "' ";
 
 		if (is_numeric($column_no)) {
 			$query .= "column_no = $column_no ";
@@ -346,7 +346,7 @@ function delete_s_item_listing_column_conf($silc_id, $column_no = NULL) {
 }
 
 function delete_s_item_listing_conf($silc_id) {
-	$query = "DELETE FROM s_item_listing_conf " . " WHERE id = '$silc_id' ";
+	$query = "DELETE FROM s_item_listing_conf " . " WHERE id = '" . db_escape($silc_id) . "' ";
 
 	$delete = db_query($query);
 	if ($delete && ($rows_affected = db_affected_rows()) !== -1) {

@@ -25,7 +25,7 @@ include_once("./lib/language.php");
 * Only sofar as the s_status_type exists!
 */
 function is_valid_s_status_type($s_status_type) {
-	$query = "SELECT 'X' FROM s_status_type WHERE s_status_type = '$s_status_type'";
+	$query = "SELECT 'X' FROM s_status_type WHERE s_status_type = '" . db_escape($s_status_type) . "'";
 	$result = db_query ( $query );
 	return db_result_has_rows($result);
 }
@@ -50,7 +50,7 @@ function fetch_update_status_type_rs($status_type) {
 			stlv.columnname = 'description' AND
 			stlv.key1 = sst.s_status_type " . "WHERE ";
 	
-	$query .= "sst.closed_ind <> 'Y' OR sst.s_status_type = '$status_type' ";
+	$query .= "sst.closed_ind <> 'Y' OR sst.s_status_type = '" . db_escape($status_type) . "' ";
 	
 	$query .= "ORDER BY 1 ASC";
 	
@@ -90,7 +90,7 @@ function fetch_status_type_r($s_status_type) {
 			ON stlv.language = '" . get_opendb_site_language () . "' AND
 			stlv.tablename = 's_status_type' AND
 			stlv.columnname = 'description' AND
-			stlv.key1 = sst.s_status_type " . "WHERE sst.s_status_type = '$s_status_type' " . "LIMIT 0,1";
+			stlv.key1 = sst.s_status_type " . "WHERE sst.s_status_type = '" . db_escape($s_status_type) . "' " . "LIMIT 0,1";
 	
 	$result = db_query ( $query );
 	return db_result_single_row( $result );

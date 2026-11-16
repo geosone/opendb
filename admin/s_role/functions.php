@@ -32,7 +32,7 @@ function fetch_role_permission_rs($role_name) {
 	$query = "SELECT p.permission_name, s.remember_me_ind, p.description, s.role_name
 			FROM s_permission p
 			LEFT JOIN s_role_permission s ON s.permission_name = p.permission_name AND
-			s.role_name = '$role_name' ";
+			s.role_name = '" . db_escape($role_name) . "' ";
 
 	$result = db_query($query);
 	if ($result && db_num_rows($result) > 0)
@@ -42,9 +42,9 @@ function fetch_role_permission_rs($role_name) {
 }
 
 function update_role_permissions($role_name, $permissions_r) {
-	$role_name = addslashes($role_name);
+	$role_name = $role_name;
 	
-	db_query("DELETE FROM s_role_permission WHERE role_name = '$role_name'");
+	db_query("DELETE FROM s_role_permission WHERE role_name = '" . db_escape($role_name) . "'");
 
 	if (strlen($role_name) > 0 && is_array($permissions_r)) {
 		reset($permissions_r);
@@ -54,7 +54,7 @@ function update_role_permissions($role_name, $permissions_r) {
 			
 			if ($enabled_ind == 'Y') {
 				$query = "INSERT INTO s_role_permission(role_name, permission_name, remember_me_ind) 
-					VALUES('$role_name', '$permission_name', '".$remember_me_ind."')";
+					VALUES('" . db_escape($role_name) . "', '" . db_escape($permission_name) . "', '".db_escape($remember_me_ind)."')";
 				
 				$insert = db_query($query);
 				if ($insert && db_affected_rows () > 0) {
