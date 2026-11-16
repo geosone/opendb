@@ -221,8 +221,36 @@ function oidc_callback($code, $state, &$error) {
 		opendb_logger(OPENDB_LOG_WARN, __FILE__, __FUNCTION__, 'No matching user', array($info['preferred_username'] ?? '', $info['email'] ?? ''));
 		return FALSE;
 	}
+	oidc_sync_user($user_id, $info);
 	$_SESSION['oidc_redirect'] = $flow['redirect'];
 	return $user_id;
+}
+
+/**
+ * Takes the name and email address from the provider, which is the
+ * directory they are maintained in ('sync_profile' => FALSE turns it off).
+ */
+function oidc_sync_user($user_id, $info) {
+	if (get_opendb_config_var('oidc', 'sync_profile') === FALSE) {
+		return;
+	}
+	$user_r = fetch_user_r($user_id);
+	if (!is_array($user_r)) {
+		return;
+	}
+	$fullname = trim((string)($info['name'] ?? ''));
+	if (strlen($fullname) == 0) {
+		$fullname = trim(($info['given_name'] ?? '') . ' ' . ($info['family_name'] ?? ''));
+	}
+	$email = trim((string)($info['email'] ?? ''));
+	if (($info['email_verified'] ?? TRUE) === FALSE || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+		$email = '';
+	}
+	$new_fullname = strlen($fullname) > 0 ? $fullname : $user_r['fullname'];
+	$new_email = strlen($email) > 0 ? $email : $user_r['email_addr'];
+	if ($new_fullname !== $user_r['fullname'] || $new_email !== $user_r['email_addr']) {
+		update_user($user_id, $new_fullname, FALSE, FALSE, $new_email, FALSE);
+	}
 }
 
 /**
