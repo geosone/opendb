@@ -1305,29 +1305,22 @@ function update_item_instance_owner($item_id, $instance_no, $old_owner_id, $owne
 // Delete item and return boolean indicating success or failure.
 //
 function delete_item_instance($item_id, $instance_no) {
-    // remove all child related item instance relationships only - not the actual instances themselves.
-    delete_item_instance_relationships ( $item_id, $instance_no );
-	
-    if (! is_exists_related_item_instance_relationship ( $item_id, $instance_no )) {
-	$query = "DELETE FROM item_instance WHERE item_id = '" . db_escape($item_id) . "' AND instance_no = '".db_escape($instance_no)."'";
-	$delete = db_query ( $query );
-	if (db_affected_rows () > 0) {
-	    opendb_logger ( OPENDB_LOG_ERROR, __FILE__, __FUNCTION__, db_error (), array (
-					$item_id,
-					$instance_no ) );
-	    return TRUE;
+	// remove the relationships to the child instances only - not the child instances themselves.
+	delete_item_instance_relationships($item_id, $instance_no);
+
+	if (!is_exists_related_item_instance_relationship($item_id, $instance_no)) {
+		$query = "DELETE FROM item_instance WHERE item_id = '" . db_escape($item_id) . "' AND instance_no = '" . db_escape($instance_no) . "'";
+		if (db_query($query) && db_affected_rows() > 0) {
+			opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, NULL, array($item_id, $instance_no));
+			return TRUE;
+		} else {
+			opendb_logger(OPENDB_LOG_ERROR, __FILE__, __FUNCTION__, db_error(), array($item_id, $instance_no));
+			return FALSE;
+		}
 	} else {
-	    opendb_logger ( OPENDB_LOG_ERROR, __FILE__, __FUNCTION__, db_error (), array (
-					$item_id,
-					$instance_no ) );
-	    return FALSE;
+		opendb_logger(OPENDB_LOG_ERROR, __FILE__, __FUNCTION__, 'Instance is referenced in at least one item instance relationship', array($item_id, $instance_no));
+		return FALSE;
 	}
-    } else {
-	opendb_logger ( OPENDB_LOG_ERROR, __FILE__, __FUNCTION__, 'Instance is referenced in at least one item instance relationship', array (
-				$item_id,
-				$instance_no ) );
-	return FALSE;
-    }
 }
 
 function insert_item_instance_relationships($item_id, $related_item_id, $related_instance_no) {
@@ -1376,22 +1369,21 @@ function insert_item_instance_relationship($item_id, $instance_no, $related_item
 }
 
 function delete_item_instance_relationships($item_id, $instance_no = NULL) {
-	$query = "DELETE FROM item_instance WHERE item_id = '" . db_escape($item_id) . "'";
-	
-	if (is_numeric ( $instance_no )) {
+	// the relationships this instance is the parent of; this used to delete
+	// from item_instance, which removed the instance itself before
+	// delete_item_instance() ran - it then failed and left the item behind
+	$query = "DELETE FROM item_instance_relationship WHERE item_id = '" . db_escape($item_id) . "'";
+	if (is_numeric($instance_no)) {
 		$query .= " AND instance_no = '" . db_escape($instance_no) . "'";
 	}
-	
-	$delete = db_query ( $query );
-	if (db_affected_rows () > 0) {
-		opendb_logger ( OPENDB_LOG_ERROR, __FILE__, __FUNCTION__, db_error (), array (
-				$item_id,
-				$instance_no ) );
+
+	if (db_query($query)) {
+		if (db_affected_rows() > 0) {
+			opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, NULL, array($item_id, $instance_no));
+		}
 		return TRUE;
 	} else {
-		opendb_logger ( OPENDB_LOG_ERROR, __FILE__, __FUNCTION__, db_error (), array (
-				$item_id,
-				$instance_no ) );
+		opendb_logger(OPENDB_LOG_ERROR, __FILE__, __FUNCTION__, db_error(), array($item_id, $instance_no));
 		return FALSE;
 	}
 }
