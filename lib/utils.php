@@ -107,6 +107,11 @@ function opendb_csrf_guard() {
 	if (!is_cross_site_request()) {
 		return;
 	}
+	// the login provider's redirect back; the OIDC state protects it
+	if (basename((string)($_SERVER['SCRIPT_NAME'] ?? '')) === 'login.php' && ($_GET['op'] ?? '') === 'oidc_callback'
+			&& strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' && empty($_POST)) {
+		return;
+	}
 	if (strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET' || !empty($_POST)) {
 		http_response_code(403);
 		header('Content-Type: text/plain; charset=utf-8');

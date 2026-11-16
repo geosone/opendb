@@ -24,6 +24,7 @@ require_once("./include/begin.inc.php");
 include_once("./lib/database.php");
 include_once("./lib/auth.php");
 include_once("./lib/logging.php");
+include_once("./lib/oidc.php");
 
 /**
     Assumes op=login and login params have been provided
@@ -108,6 +109,12 @@ function show_login_form($HTTP_VARS, $errors = NULL) {
 
 	echo ("</form>");
 
+	if (is_oidc_enabled()) {
+		echo ("<div class=\"ssoLogin\">"
+				. "<a class=\"button ssoButton\" href=\"login.php?op=oidc" . (strlen($HTTP_VARS['redirect'] ?? '') > 0 ? "&amp;redirect=" . urlencode($HTTP_VARS['redirect']) : "") . "\">"
+				. htmlspecialchars(oidc_button_label()) . "</a></div>");
+	}
+
 	// force uid field focus for login
 	echo ("\n<script type=\"text/javascript\">
 		document.forms['login']['uid'].focus();
@@ -179,7 +186,32 @@ function perform_newpassword($HTTP_VARS, &$errors) {
 	}
 }
 
-if (is_opendb_valid_session() && $HTTP_VARS['op'] != 'login' && $HTTP_VARS['op'] != 'newpassword') {
+if (is_oidc_enabled() && ($HTTP_VARS['op'] ?? '') == 'oidc' && !is_opendb_valid_session()) {
+	if (oidc_start(opendb_local_redirect(urldecode($HTTP_VARS['redirect'] ?? '')))) {
+		return;
+	}
+	show_login_form(array('op' => 'login'), array('error' => get_opendb_lang_var('login_failure'), 'detail' => 'Single sign-on provider not reachable'));
+} else if (is_oidc_enabled() && ($HTTP_VARS['op'] ?? '') == 'oidc_callback') {
+	$oidc_error = NULL;
+	$uid = isset($_GET['error']) ? FALSE : oidc_callback($_GET['code'] ?? '', $_GET['state'] ?? '', $oidc_error);
+	if ($uid !== FALSE) {
+		if (get_opendb_config_var('site', 'enable') !== FALSE || is_user_granted_permission(PERM_ADMIN_LOGIN, $uid)) {
+			register_user_login($uid, FALSE);
+			opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, 'User logged in via OIDC', array($uid));
+			$target = $_SESSION['oidc_redirect'] ?? '';
+			unset($_SESSION['oidc_redirect']);
+			opendb_redirect(strlen($target) > 0 ? opendb_local_redirect($target) : 'welcome.php');
+			return;
+		}
+		opendb_site_disabled(get_opendb_config_var('login', 'show_menu') !== FALSE);
+	} else {
+		if (isset($_GET['error'])) {
+			$oidc_error = substr(strip_tags((string)($_GET['error_description'] ?? $_GET['error'])), 0, 200);
+		}
+		opendb_logger(OPENDB_LOG_WARN, __FILE__, __FUNCTION__, 'OIDC login failed', array($oidc_error));
+		show_login_form(array('op' => 'login'), array('error' => get_opendb_lang_var('login_failure'), 'detail' => $oidc_error));
+	}
+} else if (is_opendb_valid_session() && $HTTP_VARS['op'] != 'login' && $HTTP_VARS['op'] != 'newpassword') {
 	if (strlen($HTTP_VARS['redirect']) > 0) { // Redirect to requested page, as already logged in.
  		//TODO: This does not work very well with a login page in middle of an item update!
 		opendb_redirect(opendb_local_redirect(urldecode($HTTP_VARS['redirect'])));

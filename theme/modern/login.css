@@ -76,3 +76,31 @@
 	margin-top: 1rem;
 	font-size: .85rem;
 }
+
+/* single sign-on */
+div.ssoLogin {
+	display: flex;
+	flex-direction: column;
+	gap: .8rem;
+	margin-top: 1rem;
+}
+
+div.ssoLogin::before {
+	content: "";
+	border-top: 1px solid var(--border);
+}
+
+a.ssoButton, a.ssoButton:visited {
+	display: block;
+	text-align: center;
+	padding: .6em;
+	border: 1px solid var(--accent);
+	border-radius: 7px;
+	color: var(--accent);
+	font-weight: 600;
+}
+
+a.ssoButton:hover {
+	background: var(--accent-soft);
+	text-decoration: none;
+}
