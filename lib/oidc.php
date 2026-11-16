@@ -28,19 +28,31 @@
 		'client_id' => 'opendb',
 		'client_secret' => '...',
 		'redirect_uri' => 'https://opendb.example.org/login.php?op=oidc_callback',
-		'scopes' => 'openid profile email',
+		'scopes' => 'openid profile email groups',
 		'button' => 'Single Sign-On',
 		// provider user name => OpenDb user id; otherwise the same user
 		// id, otherwise the one active user with the same email address
 		'user_map' => array('jdoe' => 'admin'),
 	);
 
-	OpenDb users are not created: an unknown provider user is refused.
+	Admin > Site Configuration > Single Sign-On (login.oidc) decides
+	whether unknown provider users get an OpenDb user created, with which
+	role, for which provider groups, and whether name and email are taken
+	from the provider (install/upgrade/local/1.6.3-oidc.sql).
 */
 
 include_once("./lib/logging.php");
 include_once("./lib/user.php");
 include_once("./lib/auth.php");
+
+/**
+ * An admin option (Admin > Site Configuration > Single Sign-On), else the
+ * same key in $CONFIG_VARS['oidc'].
+ */
+function oidc_option($id) {
+	$v = get_opendb_config_var('login.oidc', $id);
+	return $v !== NULL ? $v : get_opendb_config_var('oidc', $id);
+}
 
 function is_oidc_enabled() {
 	return get_opendb_config_var('oidc', 'enable') === TRUE
@@ -231,7 +243,7 @@ function oidc_callback($code, $state, &$error) {
  * directory they are maintained in ('sync_profile' => FALSE turns it off).
  */
 function oidc_sync_user($user_id, $info) {
-	if (get_opendb_config_var('oidc', 'sync_profile') === FALSE) {
+	if (oidc_option('sync_profile') === FALSE) {
 		return;
 	}
 	$user_r = fetch_user_r($user_id);
@@ -280,6 +292,45 @@ function oidc_map_user($info) {
 			db_free_result($results);
 			return $r['user_id'];
 		}
+	}
+
+	if (oidc_option('create_users') === TRUE) {
+		return oidc_create_user($info);
+	}
+	return FALSE;
+}
+
+/**
+ * Creates the OpenDb user for a provider user ('create_users' => TRUE).
+ * The user id is the provider user name; the role is 'create_role'
+ * (default OWNER); 'create_groups' => array(...) limits it to members of
+ * those provider groups (needs the 'groups' scope). The user has no
+ * password: only the single sign-on logs them in.
+ */
+function oidc_create_user($info) {
+	$uid = strtolower(trim((string)($info['preferred_username'] ?? '')));
+	if (!preg_match('/^[a-z0-9][a-z0-9_.-]{0,19}$/', $uid) || is_user_valid($uid)) {
+		return FALSE;
+	}
+
+	$groups = oidc_option('create_groups');
+	if (is_array($groups) && count($groups) > 0) {
+		if (count(array_intersect(array_map('strtolower', $groups), array_map('strtolower', (array)($info['groups'] ?? array())))) == 0) {
+			opendb_logger(OPENDB_LOG_WARN, __FILE__, __FUNCTION__, 'Not in a group allowed to create a user', array($uid));
+			return FALSE;
+		}
+	}
+
+	$role = ifempty(oidc_option('create_role'), 'OWNER');
+	$fullname = trim((string)($info['name'] ?? ''));
+	if (strlen($fullname) == 0) {
+		$fullname = $uid;
+	}
+	$email = filter_var(trim((string)($info['email'] ?? '')), FILTER_VALIDATE_EMAIL) ? trim($info['email']) : '';
+
+	if (insert_user($uid, $fullname, NULL, $role, get_opendb_config_var('site', 'language'), get_opendb_config_var('site', 'theme'), $email, 'Y')) {
+		opendb_logger(OPENDB_LOG_INFO, __FILE__, __FUNCTION__, 'User created at the first single sign-on', array($uid, $role));
+		return $uid;
 	}
 	return FALSE;
 }
