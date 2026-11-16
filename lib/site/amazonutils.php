@@ -59,6 +59,14 @@ function amazon_text($s) {
 }
 
 /**
+ * A title that combines two products ("Smallville Gesamtbox & O.C. California"),
+ * the way Amazon names bundles.
+ */
+function amazon_is_bundle_title($title) {
+	return preg_match('/\s(&|&amp;|\+)\s/u', (string)$title) === 1;
+}
+
+/**
  * Removes edition / format suffixes Amazon puts into titles.
  */
 function amazon_clean_title($title) {

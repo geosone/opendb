@@ -137,6 +137,8 @@ if (function_exists('db_connect')) {
 				$_OPENDB_THEME = $_OVRD_OPENDB_THEME;
 
 			} else {
+				// the 'default' set above is only for pages without database
+				$_OPENDB_THEME = '';
 				if ( strlen(get_opendb_session_var('user_id')) > 0 &&
 					 get_opendb_config_var('user_admin', 'user_themes_support') !== FALSE ) {
 					$user_theme = fetch_user_theme(get_opendb_session_var('user_id'));

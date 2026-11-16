@@ -96,6 +96,21 @@ class amazon extends SitePlugin {
 			$extra['search.barcode'] = $barcode;
 		}
 
+		// Amazon also lists the bundles that contain the product for a barcode
+		// ("Smallville Gesamtbox & O.C. California"): drop "A & B" titles when
+		// a result without one exists
+		if ($barcode !== FALSE && count($results) > 1) {
+			$single = array();
+			foreach ($results as $r) {
+				if (!amazon_is_bundle_title($r['title'])) {
+					$single[] = $r;
+				}
+			}
+			if (count($single) > 0) {
+				$results = $single;
+			}
+		}
+
 		// a barcode that finds exactly one product is that product
 		if ($barcode !== FALSE && count($results) == 1 && !$this->isPreviousPage()) {
 			$this->addListingRow(NULL, NULL, NULL, array_merge(array($this->asinId => $results[0]['asin']), $extra));
