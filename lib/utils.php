@@ -70,10 +70,70 @@ function strip_tags_array($params) {
 		if (is_array ( $val )) {
 			$rs [$key] = strip_tags_array ( $val );
 		} else {
-			$rs [$key] = strip_tags ( $val );
+			// no tags and nothing that ends an HTML attribute value: GET
+			// values can come from a link on any site (reflected XSS)
+			$rs [$key] = str_replace ( array ('"', '<', '>', '`'), '', strip_tags ( (string)$val ) );
 		}
 	}
 	return $rs;
+}
+
+/**
+ * TRUE when the request was started by another site (link, form, script),
+ * using the browser's Sec-Fetch-Site header or else Origin / Referer.
+ */
+function is_cross_site_request() {
+	$host = strtolower(preg_replace('/:\d+$/', '', (string)($_SERVER['HTTP_HOST'] ?? '')));
+	$fetch_site = strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE'] ?? ''));
+	if ($fetch_site !== '') {
+		return $fetch_site === 'cross-site' || $fetch_site === 'same-site';
+	}
+	foreach (array('HTTP_ORIGIN', 'HTTP_REFERER') as $hdr) {
+		$value = (string)($_SERVER[$hdr] ?? '');
+		if ($value !== '' && $value !== 'null') {
+			return strtolower((string)parse_url($value, PHP_URL_HOST)) !== $host;
+		}
+	}
+	return FALSE;
+}
+
+/**
+ * Stops cross-site request forgery: a request from another site may not
+ * post anything, and a link from another site that carries parameters
+ * (which may change data, e.g. op=delete&confirmed=true) is only followed
+ * after a click on this site. Plain links (bookmarks) work as before.
+ */
+function opendb_csrf_guard() {
+	if (!is_cross_site_request()) {
+		return;
+	}
+	if (strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET' || !empty($_POST)) {
+		http_response_code(403);
+		header('Content-Type: text/plain; charset=utf-8');
+		echo "Request from another site refused.\n";
+		exit;
+	}
+	if (!empty($_GET)) {
+		$url = (string)($_SERVER['REQUEST_URI'] ?? '/');
+		if (substr($url, 0, 1) !== '/' || substr($url, 0, 2) === '//') {
+			$url = '/';
+		}
+		$url = htmlspecialchars($url, ENT_QUOTES);
+		header('Content-Type: text/html; charset=utf-8');
+		header('Cache-Control: no-store');
+		echo "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"referrer\" content=\"same-origin\"><title>Continue</title>"
+			. "<style>body{font-family:system-ui,sans-serif;margin:4rem auto;max-width:36rem;padding:0 1rem}a{display:inline-block;margin-top:1rem;padding:.6rem 1.2rem;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none}</style>"
+			. "</head><body><p>You followed a link from another site.</p><a href=\"$url\">Continue</a></body></html>";
+		exit;
+	}
+}
+
+function opendb_security_headers() {
+	if (!headers_sent()) {
+		header('X-Frame-Options: SAMEORIGIN');
+		header('X-Content-Type-Options: nosniff');
+		header('Referrer-Policy: same-origin');
+	}
 }
 
 function generate_random_num() {

@@ -63,6 +63,9 @@ if (!isset($PHP_SELF)) {
 // We want all the HTTP variables into the $HTTP_VARS array, so
 // we can reference everything from the one place.
 // any upload files will be in new post php 4.1 $_FILES array
+opendb_security_headers();
+opendb_csrf_guard();
+
 if (!empty($_GET)) {
 	// fixes for XSS vulnerabilities reported in OpenDb 1.0.6
 	// http://secunia.com/advisories/31719

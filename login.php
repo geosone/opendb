@@ -84,14 +84,14 @@ function show_login_form($HTTP_VARS, $errors = NULL) {
 	// Set a "redirect" variable here so that after we give them a full session
 	// we can redirect them back to the page they really wanted.
 	if (strlen($HTTP_VARS['redirect']) > 0) {
-		echo ("<input type=\"hidden\" name=\"redirect\" value=\"" . $HTTP_VARS['redirect'] . "\">");
+		echo ("<input type=\"hidden\" name=\"redirect\" value=\"" . htmlspecialchars($HTTP_VARS['redirect'], ENT_QUOTES) . "\">");
 	}
 
 	echo ("<input type=\"hidden\" name=\"op\" value=\"login\">");
 
 	echo ("\n<ul>" . 
 			"\n<li><label class=\"label\" for=\"uid\">" . get_opendb_lang_var('userid') . "</label>" . 
-			"<input type=\"text\" class=\"text\" id=\"uid\" name=\"uid\" value=\"" . $HTTP_VARS['uid'] . "\"></li>" . 
+			"<input type=\"text\" class=\"text\" id=\"uid\" name=\"uid\" value=\"" . htmlspecialchars($HTTP_VARS['uid'] ?? '', ENT_QUOTES) . "\"></li>" . 
 			
 			"\n<li><label class=\"label\" for=\"password\">"
 			. get_opendb_lang_var('password') . "</label>" . 
@@ -182,7 +182,7 @@ function perform_newpassword($HTTP_VARS, &$errors) {
 if (is_opendb_valid_session() && $HTTP_VARS['op'] != 'login' && $HTTP_VARS['op'] != 'newpassword') {
 	if (strlen($HTTP_VARS['redirect']) > 0) { // Redirect to requested page, as already logged in.
  		//TODO: This does not work very well with a login page in middle of an item update!
-		opendb_redirect(urldecode($HTTP_VARS['redirect']));
+		opendb_redirect(opendb_local_redirect(urldecode($HTTP_VARS['redirect'])));
 	} else { // refresh of login page
  		opendb_redirect('welcome.php');
 	}
@@ -222,7 +222,7 @@ if (is_opendb_valid_session() && $HTTP_VARS['op'] != 'login' && $HTTP_VARS['op']
 					// We've just given her a valid one, so log it
 					// appropriately and send a redirect to where she
 					// really wanted to go.
-					opendb_redirect(urldecode($HTTP_VARS['redirect']));
+					opendb_redirect(opendb_local_redirect(urldecode($HTTP_VARS['redirect'])));
 					return;
 				} else {
 					opendb_redirect('welcome.php');

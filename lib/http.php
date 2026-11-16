@@ -50,6 +50,19 @@ function redirect_login($PHP_SELF, $HTTP_VARS, $rememberMeLogin = FALSE) {
  *
  * @param string $link The URL to redirect the user's browser to
  */
+/**
+ * A redirect target given in a request: only paths on this site, so the
+ * login form cannot send a user on to another site.
+ */
+function opendb_local_redirect($link) {
+	$link = (string)$link;
+	if ($link === '' || preg_match('#^[a-z][a-z0-9+.-]*:#i', $link) || preg_match('#^[/\\\\]{2}#', $link)
+			|| preg_match('/[\r\n]/', $link)) {
+		return 'welcome.php';
+	}
+	return $link;
+}
+
 function opendb_redirect($link) {
 	if (! is_url_absolute ( $link )) {
 		$protocol = 'http';

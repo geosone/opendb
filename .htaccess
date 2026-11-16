@@ -1,0 +1,7 @@
+# Only the pages in the top directory are entry points. Code, installer,
+# tests and the cache / upload directories are never run directly.
+<IfModule mod_alias.c>
+	RedirectMatch 404 "/(lib|include|install|admin|tools|test|log|docs|contrib)/.*\.(php\d?|phtml|phar|inc|sql|log|txt|xml)$"
+	RedirectMatch 404 "/(upload|httpcache|itemcache|importcache)/.*\.(php\d?|phtml|phar|inc|htaccess)$"
+	RedirectMatch 404 "/(phpinfo\.php|Readme|composer\.(json|lock))$"
+</IfModule>
