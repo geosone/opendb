@@ -691,7 +691,6 @@ INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, k
 INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_site_plugin_input_field', 'prompt', 'amazonuk', 'amazukasin', '', 'ASIN'); 
 INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_site_plugin_input_field', 'prompt', 'olibrary', 'search', '', 'Titel / Autor / ISBN'); 
 INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_site_plugin_input_field', 'prompt', 'imdb', 'title', '', 'Titelsuche'); 
-INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_site_plugin_input_field', 'prompt', 'imdb', 'imdb_id', '', 'IMDb-ID'); 
 INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_site_plugin_input_field', 'prompt', 'tmdb', 'title', '', 'Titel'); 
 INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_site_plugin_input_field', 'prompt', 'tmdb', 'year', '', 'Jahr'); 
 INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_site_plugin_input_field', 'prompt', 'gbooks', 'title', '', 'Titelsuche'); 
@@ -968,3 +967,8 @@ INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, k
 INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_item_attribute_type', 'prompt', 'CD', 'S_TITLE', '1', 'Albumtitel'); 
 INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_item_attribute_type', 'prompt', 'DVD', 'MOVIE_PLOT', '10', 'Inhalt'); 
 INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_item_attribute_type', 'prompt', 'VHS', 'MOVIE_PLOT', '10', 'Inhalt'); 
+INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_attribute_type_lookup', 'display', 'MOVIEGENRE', 'Crime', '', 'Krimi'); 
+INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_attribute_type_lookup', 'display', 'MOVIEGENRE', 'Family', '', 'Familie'); 
+INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_attribute_type_lookup', 'display', 'MOVIEGENRE', 'History', '', 'Historienfilm'); 
+INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_attribute_type_lookup', 'display', 'MOVIEGENRE', 'Biography', '', 'Biografie'); 
+INSERT INTO s_table_language_var (language, tablename, columnname, key1, key2, key3, value) VALUES ('GERMAN', 's_site_plugin_input_field', 'prompt', 'imdb', 'imdb_id', '', 'IMDb-ID oder Link'); 
