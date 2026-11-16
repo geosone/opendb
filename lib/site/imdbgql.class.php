@@ -160,7 +160,7 @@ function _imdbgql_str($value) {
 function imdbgql_search($term, $limit, &$error) {
 	$data = imdbgql_graphql('{ mainSearch(first: ' . (int)$limit . ', options: { searchTerm: ' . _imdbgql_str($term) . ', type: TITLE, includeAdult: false }) {'
 			. ' edges { node { entity { ... on Title { id titleText { text } originalTitleText { text } releaseYear { year } titleType { id text }'
-			. ' primaryImage { url } principalCredits(filter: { categories: ["cast"] }) { credits(limit: 2) { name { nameText { text } } } } } } } } }', $error);
+			. ' primaryImage { url } principalCredits(filter: { categories: ["cast"] }) { credits(limit: 2) { name { nameText { text } } } } } } } } } }', $error);
 	if ($data === FALSE) {
 		return FALSE;
 	}
