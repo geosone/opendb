@@ -1,0 +1,287 @@
+/* item input widgets */
+
+ul.saveButtons
+{
+	clear: both;
+	float: right;
+	margin: 0px;
+	padding: 0px;
+	list-style-type: none;
+}
+
+ul.saveButtons li
+{
+	float: left;
+	padding-right: 2px;
+	border: none;
+}
+
+div.item_inputContent th.prompt
+{
+	color: var(--prompt-text);
+	background-color: var(--row-odd);
+}
+
+div.item_inputContent td.data
+{
+	background-color: var(--row-even);
+}
+
+table.cloneItemForm th.prompt
+{
+	background: transparent;
+	color: var(--text);
+}
+
+table.cloneItemForm td.data
+{
+	background: transparent;
+}
+
+td ul.tabMenu
+{
+	padding-left: 0px;
+	margin-left: 0px;
+}
+
+.multiValue a
+{
+	margin-left: 10px;
+	margin-top: 2px;
+	float: left;
+	text-decoration: underline;
+}
+
+.multiValue ul
+{
+	list-style-type: none;
+	margin: 0px;
+	padding: 0px;
+	float: left;
+}
+
+/* site plugin search form */
+
+ul#site-add-menu
+{
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: .35rem;
+	margin: 0 0 1rem;
+	padding: 0;
+}
+
+ul#site-add-menu li
+{
+	padding: .35em .9em;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: var(--surface);
+	color: var(--text);
+	white-space: nowrap;
+	cursor: pointer;
+	font-size: .9rem;
+	transition: background .15s, border-color .15s;
+}
+
+ul#site-add-menu li:hover
+{
+	border-color: var(--accent);
+}
+
+ul#site-add-menu li.activeTab
+{
+	background: var(--accent);
+	border-color: var(--accent);
+	color: #fff;
+	font-weight: 600;
+	cursor: default;
+}
+
+#site-add-content, #site-add-manual
+{
+	clear: both;
+	max-width: 560px;
+	padding: 1.2rem 1.4rem;
+	margin-bottom: 1.2rem;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+}
+
+#site-add-content h3
+{
+	display: none;
+}
+
+#site-add-content h4
+{
+	margin: .2rem 0 .8rem;
+	font-weight: normal;
+	color: var(--muted);
+	font-size: .9rem;
+}
+
+#site-add-content img.siteLogo
+{
+	display: block;
+	max-height: 40px;
+	width: auto;
+	margin-bottom: .4rem;
+	border-radius: 4px;
+}
+
+#site-add-content label, #site-add-manual label
+{
+	color: var(--prompt-text);
+	font-weight: 600;
+	font-size: .88rem;
+	display: block;
+	padding-top: .7rem;
+	padding-bottom: .2rem;
+}
+
+#site-add-content input.text, #site-add-content select, #site-add-manual select
+{
+	width: 100%;
+}
+
+#site-add-content input.submit, #site-add-manual input.submit
+{
+	margin-top: 1rem;
+}
+
+div.sitePluginHidden
+{
+	display: none;
+}
+
+input.submit
+{
+	display: block;
+}
+
+/* site search results */
+
+#site-search td.image
+{
+	width: 5%;
+}
+
+#site-search td.title
+{
+	text-align: left;
+	padding: 5px;
+}
+
+#site-search td.moreInfo
+{
+	width: 8%;
+	padding: 5px;
+	white-space: nowrap;
+}
+
+#site-search td.moreInfo a
+{
+	display: block;
+	background-image: url(../../images/magnify.png);
+	background-repeat: no-repeat;
+	background-position: top left; 
+	padding-left: 20px;
+	text-align: left;
+}
+
+#site-search .footer-links
+{
+	padding-top: 10px;
+	float: left;
+}
+
+/* layout */
+
+div.tabContentContainer
+{
+	border: 1px solid var(--border);
+	float: left;
+	margin-top: -1px;
+	clear: left;
+	
+}
+
+div.tabContent .footer-links
+{
+	float: right;
+}
+
+ul.urlOptionsMenu
+{
+	padding: 3px;
+	margin: 2px;
+	clear: both;
+	list-style-type: none;
+	margin-bottom: 0px;
+	padding-bottom: 0px;
+}
+
+ul.urlOptionsMenu li
+{
+	float: left;
+	border: 1px solid black; 
+	border-bottom: none;
+	padding: 2px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	background-color: var(--row-even); 
+	cursor: pointer;
+}
+
+ul.urlOptionsMenu li.activeTab
+{
+	background-color: var(--surface); 
+	font-weight: bold; 
+	cursor: default;
+}
+
+div.urlOptionsContainer
+{
+	clear: both;
+	float: left;
+}
+
+.fieldContentHidden
+{
+	display: none;
+}
+
+div.sitePluginDebug 
+{
+	padding: 5px;
+	margin-top: 25px;
+	border:1px dashed black;
+	clear: left;
+}
+
+div.sitePluginDebug h2
+{
+	margin-top: 0px;
+}
+
+ul.checkboxGridOptionsVertical, ul.checkboxGridOptions, ul.radioGridOptionsVertical, ul.radioGridOptions
+{
+	list-style-type: none;
+	padding: 0px;
+	margin: 0px;
+}
+
+ul.checkboxGridOptionsVertical li, ul.radioGridOptionsVertical li
+{
+	float: left;
+	width: 30%;
+}
+
+td.gamesystem li {
+	height: 40px;
+	padding: 5px;	
+}

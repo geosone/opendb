@@ -22,7 +22,7 @@ INSERT INTO s_language_var (language, varname, value) VALUES ('GERMAN', 'add_rel
 INSERT INTO s_language_var (language, varname, value) VALUES ('GERMAN', 'add_related_parent', 'Übergeordnetes Item hinzufügen'); 
 INSERT INTO s_language_var (language, varname, value) VALUES ('GERMAN', 'add_to_reserve_list', 'Zur Liste hinzufügen'); 
 INSERT INTO s_language_var (language, varname, value) VALUES ('GERMAN', 'add_user', 'Benutzer hinzufügen'); 
-INSERT INTO s_language_var (language, varname, value) VALUES ('GERMAN', 'admin_tools', 'Admin Tools'); 
+INSERT INTO s_language_var (language, varname, value) VALUES ('GERMAN', 'admin_tools', 'Verwaltung'); 
 INSERT INTO s_language_var (language, varname, value) VALUES ('GERMAN', 'advanced', 'Erweitert'); 
 INSERT INTO s_language_var (language, varname, value) VALUES ('GERMAN', 'advanced_search', 'Erweiterte Suche'); 
 INSERT INTO s_language_var (language, varname, value) VALUES ('GERMAN', 'all', 'Alle'); 

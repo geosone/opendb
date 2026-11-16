@@ -1,0 +1,78 @@
+/* login: a centred card */
+#content.loginContent {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-top: 8vh;
+}
+
+.loginContent h2 {
+	display: block;
+	margin: 0 0 1rem;
+	font-size: 1.5rem;
+	text-align: center;
+}
+
+#loginFormDiv {
+	width: 100%;
+	max-width: 360px;
+	padding: 1.6rem 1.8rem 1.2rem;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 14px;
+	box-shadow: var(--shadow);
+}
+
+#loginForm ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+#loginForm ul li {
+	margin-bottom: .9rem;
+}
+
+#loginForm .label {
+	display: block;
+	margin: 0 0 .3rem;
+	color: var(--prompt-text);
+	font-weight: 600;
+	font-size: .9rem;
+}
+
+#loginForm input.text, #loginForm input.password {
+	width: 100%;
+	padding: .55em .75em;
+}
+
+#loginForm ul li:has(input.remember) {
+	display: flex;
+	flex-direction: row-reverse;
+	justify-content: flex-end;
+	align-items: center;
+	gap: .5rem;
+}
+
+#loginForm ul li:has(input.remember) .label {
+	margin: 0;
+	font-weight: normal;
+}
+
+#loginForm input.submit {
+	width: 100%;
+	padding: .65em;
+	font-size: 1rem;
+}
+
+.redirectMessage {
+	color: var(--danger);
+	font-weight: 600;
+}
+
+#loginFormDiv ul.footer-links {
+	float: none;
+	justify-content: center;
+	margin-top: 1rem;
+	font-size: .85rem;
+}

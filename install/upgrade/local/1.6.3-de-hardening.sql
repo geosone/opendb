@@ -103,3 +103,13 @@ INSERT INTO s_attribute_type_lookup (s_attribute_type, order_no, value, display,
 INSERT INTO s_attribute_type_lookup (s_attribute_type, order_no, value, display, img, checked_ind) SELECT 'GAMERATING', 22, 'USK12', 'USK 12', NULL, 'N' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM s_attribute_type_lookup WHERE s_attribute_type = 'GAMERATING' AND value = 'USK12');
 INSERT INTO s_attribute_type_lookup (s_attribute_type, order_no, value, display, img, checked_ind) SELECT 'GAMERATING', 23, 'USK16', 'USK 16', NULL, 'N' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM s_attribute_type_lookup WHERE s_attribute_type = 'GAMERATING' AND value = 'USK16');
 INSERT INTO s_attribute_type_lookup (s_attribute_type, order_no, value, display, img, checked_ind) SELECT 'GAMERATING', 24, 'USK18', 'USK 18 - keine Jugendfreigabe', NULL, 'N' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM s_attribute_type_lookup WHERE s_attribute_type = 'GAMERATING' AND value = 'USK18');
+
+# Preselected values end up in every item a site plugin leaves the field
+# empty for (a German DVD saved as "PG-13, VC-1, 50 GB, region 1, NTSC").
+# No preselection for facts that differ per disc; German defaults for the rest.
+UPDATE s_attribute_type_lookup SET checked_ind = 'N'
+ WHERE s_attribute_type IN ('AGE_RATING', 'BD_CODEC', 'BD_PROFILE', 'BD_SIZE', 'RATIO', 'GAMEGENRE', 'GAMERATING', 'MUSICGENRE');
+UPDATE s_attribute_type_lookup SET checked_ind = IF(value = '2', 'Y', 'N') WHERE s_attribute_type = 'DVD_REGION';
+UPDATE s_attribute_type_lookup SET checked_ind = IF(value = 'B', 'Y', 'N') WHERE s_attribute_type = 'BD_REGION';
+UPDATE s_attribute_type_lookup SET checked_ind = IF(value = 'PAL', 'Y', 'N') WHERE s_attribute_type = 'VID_FORMAT';
+UPDATE s_attribute_type_lookup SET checked_ind = IF(value = 'EU_DE', 'Y', 'N') WHERE s_attribute_type = 'GAMEREGION';

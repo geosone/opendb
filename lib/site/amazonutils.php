@@ -485,4 +485,17 @@ function amazon_description($doc) {
 	}
 	return '';
 }
+
+/**
+ * The description without the technical lists and the legally required
+ * manufacturer address Amazon appends ("Sprachen Staffel 1: ...",
+ * "Anschrift Hersteller/Importeur: ...").
+ */
+function amazon_plot($text) {
+	$cut = '/\s(?:Sprachen\s+Staffel\s*\d+|Sprachen\s*:|Tonformat\s*:|Bildformat\s*:|Untertitel\s*:|Bonusmaterial\s*:|Anschrift\s+Hersteller|Hersteller\s*\/\s*Importeur|Herstellerinformation|Manufacturer contact|Languages\s*:|Subtitles\s*:)/iu';
+	if (preg_match($cut, $text, $m, PREG_OFFSET_CAPTURE) && $m[0][1] > 40) {
+		$text = rtrim(substr($text, 0, $m[0][1]), " \t,;:-");
+	}
+	return $text;
+}
 ?>

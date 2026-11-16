@@ -271,7 +271,7 @@ class amazon extends SitePlugin {
 			$this->addItemAttribute('vid_format', $m[1]);
 		}
 		if (strlen($description) > 0) {
-			$this->addItemAttribute('blurb', $description);
+			$this->addItemAttribute('blurb', amazon_plot($description));
 		}
 	}
 
@@ -302,7 +302,7 @@ class amazon extends SitePlugin {
 			$this->addItemAttribute('pub_year', $year);
 		}
 		if (strlen($description) > 0) {
-			$this->addItemAttribute('blurb', $description);
+			$this->addItemAttribute('blurb', amazon_plot($description));
 		}
 	}
 
@@ -317,7 +317,7 @@ class amazon extends SitePlugin {
 			$this->addItemAttribute('gamerating', $rating);
 		}
 		if (strlen($description) > 0) {
-			$this->addItemAttribute('blurb', $description);
+			$this->addItemAttribute('blurb', amazon_plot($description));
 		}
 	}
 
@@ -335,7 +335,7 @@ class amazon extends SitePlugin {
 			$this->addItemAttribute('year', $year);
 		}
 		if (strlen($description) > 0) {
-			$this->addItemAttribute('blurb', $description);
+			$this->addItemAttribute('blurb', amazon_plot($description));
 		}
 	}
 }
