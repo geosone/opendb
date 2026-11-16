@@ -1,0 +1,32 @@
+<h3>Medien-Suche</h3>
+
+<ul>
+<li>Boolean-Unterstützung ist nicht implementiert bei 'exakte' Treffer</li>
+<li>Groß- und Kleinschreibung wird immer unberücksichtigt gelassen.</li>
+<li>Verwenden Sie Boolean-Operatoren und Verschachtelung für die Suche nach Wordkombinationen oder Sätzen.</li>
+<li>Zum Beispiel:
+	<ul>
+	<li>Rambo AND III</li>
+	<li>II OR III OR IV</li>
+	<li>Rambo AND (II OR III)</li>
+	<li>((2 OR II) AND (Rambo OR "First Blood")) NOT (III OR Box)</li>
+	</ul>
+</li>
+<li>Verwenden Sie das '_' Jokerzeichen stellvertretend für die Suche nach nur <i>einem</i> Zeichen und das '%' Jokerzeichen für eine <i>beliebige</i> Anzahl Zeichen.</li>
+<li>Zum Beispiel:
+<ul>
+<li>Suche nach &quot;se_en&quot; kann folgende Treffer finden: &quot;seven&quot; or &quot;seben&quot; or &quot;sewen&quot;</li>
+<li>Suche nach &quot;%ve%&quot; kann folgende Treffer finden: &quot;seven&quot; or &quot;fugitive&quot; or &quot;maverick&quot; or &quot;driver&quot;</li>
+<li>Suche nach &quot;ve%&quot; kann folgende Treffer finden: &quot;version&quot; or &quot;vex&quot; or &quot;vehicle&quot; or &quot;driver&quot;</li>
+</ul>
+</li>
+
+<li>Wenn Sie den 'nur ganze Wörter' Modus nutzt, werden einige Titel möglicherweise nicht gefunden, wenn im Mediumtitel ein ':' (Doppelpunkt) vorkommt.  Benutze den ':' oder ein Jokerzeichen, um solche Titel zu finden.</li>
+<li>Zum Beispiel:
+	<ul>
+	<li>Der Titel 'Rambo: First Blood Part II', würde im <u>nur ganze Wörter</u> Modus nicht gefunden werden durch die Anfrage: <i>Rambo AND II</i>.  Du müsstest <i>%Rambo% AND II</i> stattdessen angeben.</li>
+	</ul>
+</li>
+<li>Wenn Sie Jokerzeichen mit einem &quot;Titel-&quot; oder &quot;Eigenschaftswort&quot; verwenden, wird in diesem Zusammenhang der Modus <u>nur ganze Wörter / Teilweise</u> ignoriert.</li>
+</ul>
+
