@@ -69,7 +69,7 @@ class amazon extends SitePlugin {
 		$keywords = $barcode !== FALSE ? $barcode : $term;
 		$queryUrl = "https://" . $this->url . "/s?k=" . urlencode($keywords) . ($amazon_index != NULL ? "&i=" . $amazon_index : "") . ($page_no > 1 ? "&page=" . (int)$page_no : "");
 
-		$pageBuffer = $this->fetchURI($queryUrl);
+		$pageBuffer = $this->fetchURI($queryUrl, TRUE);
 		if (strlen($pageBuffer) == 0) {
 			return FALSE;
 		}
@@ -121,7 +121,7 @@ class amazon extends SitePlugin {
 			return FALSE;
 		}
 
-		$pageBuffer = $this->fetchURI("https://" . $this->url . "/dp/" . strtoupper($asin));
+		$pageBuffer = $this->fetchURI("https://" . $this->url . "/dp/" . strtoupper($asin), TRUE);
 		if (strlen($pageBuffer) == 0) {
 			return FALSE;
 		}
