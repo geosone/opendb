@@ -38,6 +38,10 @@ $_opendb_dblink = NULL;
 function db_connect($host, $user, $passwd, $dbname, $charset = NULL, $cache_link = TRUE) {
 	global $_opendb_dblink;
 
+	// OpenDb checks the return values; with the PHP >= 8.1 default every
+	// failed query would be an uncaught exception (a blank 500 page)
+	mysqli_report(MYSQLI_REPORT_OFF);
+
 	$index = strpos($host, ':');
 	if ($index !== FALSE) {
 		$port = substr($host, $index + 1);
